@@ -44,12 +44,8 @@ func EncodeSearchRequest(encoder func(*http.Request) goahttp.Encoder) func(*http
 		}
 		values := req.URL.Query()
 		values.Add("query", p.Query)
-		if p.Page != nil {
-			values.Add("page", fmt.Sprintf("%v", *p.Page))
-		}
-		if p.PageSize != nil {
-			values.Add("pageSize", fmt.Sprintf("%v", *p.PageSize))
-		}
+		values.Add("page", fmt.Sprintf("%v", p.Page))
+		values.Add("pageSize", fmt.Sprintf("%v", p.PageSize))
 		req.URL.RawQuery = values.Encode()
 		return nil
 	}

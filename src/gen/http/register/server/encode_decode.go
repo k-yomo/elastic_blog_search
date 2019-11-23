@@ -12,6 +12,7 @@ import (
 	"io"
 	"net/http"
 
+	register "github.com/k-yomo/elastic_blog_search/src/gen/register"
 	goahttp "goa.design/goa/v3/http"
 	goa "goa.design/goa/v3/pkg"
 )
@@ -33,7 +34,7 @@ func EncodeRegisterResponse(encoder func(context.Context, http.ResponseWriter) g
 func DecodeRegisterRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
 	return func(r *http.Request) (interface{}, error) {
 		var (
-			body []*PostRequestBody
+			body RegisterRequestBody
 			err  error
 		)
 		err = decoder(r).Decode(&body)
@@ -43,14 +44,36 @@ func DecodeRegisterRequest(mux goahttp.Muxer, decoder func(*http.Request) goahtt
 			}
 			return nil, goa.DecodePayloadError(err.Error())
 		}
-		if len(body) < 1 {
-			err = goa.MergeErrors(err, goa.InvalidLengthError("body", body, len(body), 1, true))
+		err = ValidateRegisterRequestBody(&body)
+		if err != nil {
+			return nil, err
+		}
+
+		var (
+			key string
+		)
+		key = r.Header.Get("Authorization")
+		if key == "" {
+			err = goa.MergeErrors(err, goa.MissingFieldError("Authorization", "header"))
 		}
 		if err != nil {
 			return nil, err
 		}
-		payload := NewRegisterPost(body)
+		payload := NewRegisterPayload(&body, key)
 
 		return payload, nil
 	}
+}
+
+// unmarshalPostRequestBodyToRegisterPost builds a value of type *register.Post
+// from a value of type *PostRequestBody.
+func unmarshalPostRequestBodyToRegisterPost(v *PostRequestBody) *register.Post {
+	res := &register.Post{
+		ID:          v.ID,
+		Title:       v.Title,
+		Description: v.Description,
+		Body:        v.Body,
+	}
+
+	return res
 }

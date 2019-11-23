@@ -35,8 +35,8 @@ func DecodeSearchRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 	return func(r *http.Request) (interface{}, error) {
 		var (
 			query    string
-			page     *uint
-			pageSize *uint
+			page     uint
+			pageSize uint
 			err      error
 		)
 		query = r.URL.Query().Get("query")
@@ -45,24 +45,26 @@ func DecodeSearchRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 		}
 		{
 			pageRaw := r.URL.Query().Get("page")
-			if pageRaw != "" {
+			if pageRaw == "" {
+				page = 1
+			} else {
 				v, err2 := strconv.ParseUint(pageRaw, 10, strconv.IntSize)
 				if err2 != nil {
 					err = goa.MergeErrors(err, goa.InvalidFieldTypeError("page", pageRaw, "unsigned integer"))
 				}
-				pv := uint(v)
-				page = &pv
+				page = uint(v)
 			}
 		}
 		{
 			pageSizeRaw := r.URL.Query().Get("pageSize")
-			if pageSizeRaw != "" {
+			if pageSizeRaw == "" {
+				pageSize = 50
+			} else {
 				v, err2 := strconv.ParseUint(pageSizeRaw, 10, strconv.IntSize)
 				if err2 != nil {
 					err = goa.MergeErrors(err, goa.InvalidFieldTypeError("pageSize", pageSizeRaw, "unsigned integer"))
 				}
-				pv := uint(v)
-				pageSize = &pv
+				pageSize = uint(v)
 			}
 		}
 		if err != nil {

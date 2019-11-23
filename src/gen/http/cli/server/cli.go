@@ -31,15 +31,29 @@ search search
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + ` register register --body '[
-      {
-         "body": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
-         "description": "Dolores alias incidunt sunt ut veniam.",
-         "id": "Nihil quisquam.",
-         "title": "Earum dolores qui."
-      }
-   ]'` + "\n" +
-		os.Args[0] + ` search search --query "Quia ipsum omnis repellat nostrum autem." --page 6514126617171776835 --page-size 12386236855430162696` + "\n" +
+	return os.Args[0] + ` register register --body '{
+      "posts": [
+         {
+            "body": "Tempore voluptas cumque voluptatem aut facere.",
+            "description": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
+            "id": "Earum dolores qui.",
+            "title": "Dolores alias incidunt sunt ut veniam."
+         },
+         {
+            "body": "Tempore voluptas cumque voluptatem aut facere.",
+            "description": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
+            "id": "Earum dolores qui.",
+            "title": "Dolores alias incidunt sunt ut veniam."
+         },
+         {
+            "body": "Tempore voluptas cumque voluptatem aut facere.",
+            "description": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
+            "id": "Earum dolores qui.",
+            "title": "Dolores alias incidunt sunt ut veniam."
+         }
+      ]
+   }' --key "Ipsum omnis repellat nostrum autem facilis."` + "\n" +
+		os.Args[0] + ` search search --query "Est ipsa laboriosam assumenda veritatis sapiente ullam." --page 2911086586027087742 --page-size 5957678696885577255` + "\n" +
 		""
 }
 
@@ -57,6 +71,7 @@ func ParseEndpoint(
 
 		registerRegisterFlags    = flag.NewFlagSet("register", flag.ExitOnError)
 		registerRegisterBodyFlag = registerRegisterFlags.String("body", "REQUIRED", "")
+		registerRegisterKeyFlag  = registerRegisterFlags.String("key", "REQUIRED", "")
 
 		searchFlags = flag.NewFlagSet("search", flag.ContinueOnError)
 
@@ -144,7 +159,7 @@ func ParseEndpoint(
 			switch epn {
 			case "register":
 				endpoint = c.Register()
-				data, err = registerc.BuildRegisterPayload(*registerRegisterBodyFlag)
+				data, err = registerc.BuildRegisterPayload(*registerRegisterBodyFlag, *registerRegisterKeyFlag)
 			}
 		case "search":
 			c := searchc.NewClient(scheme, host, doer, enc, dec, restore)
@@ -176,20 +191,35 @@ Additional help:
 `, os.Args[0], os.Args[0])
 }
 func registerRegisterUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] register register -body JSON
+	fmt.Fprintf(os.Stderr, `%s [flags] register register -body JSON -key STRING
 
 Register implements register.
     -body JSON: 
+    -key STRING: 
 
 Example:
-    `+os.Args[0]+` register register --body '[
-      {
-         "body": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
-         "description": "Dolores alias incidunt sunt ut veniam.",
-         "id": "Nihil quisquam.",
-         "title": "Earum dolores qui."
-      }
-   ]'
+    `+os.Args[0]+` register register --body '{
+      "posts": [
+         {
+            "body": "Tempore voluptas cumque voluptatem aut facere.",
+            "description": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
+            "id": "Earum dolores qui.",
+            "title": "Dolores alias incidunt sunt ut veniam."
+         },
+         {
+            "body": "Tempore voluptas cumque voluptatem aut facere.",
+            "description": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
+            "id": "Earum dolores qui.",
+            "title": "Dolores alias incidunt sunt ut veniam."
+         },
+         {
+            "body": "Tempore voluptas cumque voluptatem aut facere.",
+            "description": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
+            "id": "Earum dolores qui.",
+            "title": "Dolores alias incidunt sunt ut veniam."
+         }
+      ]
+   }' --key "Ipsum omnis repellat nostrum autem facilis."
 `, os.Args[0])
 }
 
@@ -215,6 +245,6 @@ Search implements search.
     -page-size UINT: 
 
 Example:
-    `+os.Args[0]+` search search --query "Quia ipsum omnis repellat nostrum autem." --page 6514126617171776835 --page-size 12386236855430162696
+    `+os.Args[0]+` search search --query "Est ipsa laboriosam assumenda veritatis sapiente ullam." --page 2911086586027087742 --page-size 5957678696885577255
 `, os.Args[0])
 }

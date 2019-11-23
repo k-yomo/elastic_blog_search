@@ -9,7 +9,14 @@ package server
 
 import (
 	register "github.com/k-yomo/elastic_blog_search/src/gen/register"
+	goa "goa.design/goa/v3/pkg"
 )
+
+// RegisterRequestBody is the type of the "register" service "register"
+// endpoint HTTP request body.
+type RegisterRequestBody struct {
+	Posts []*PostRequestBody `form:"posts,omitempty" json:"posts,omitempty" xml:"posts,omitempty"`
+}
 
 // PostRequestBody is used to define fields on request body types.
 type PostRequestBody struct {
@@ -23,16 +30,25 @@ type PostRequestBody struct {
 	Body *string `form:"body,omitempty" json:"body,omitempty" xml:"body,omitempty"`
 }
 
-// NewRegisterPost builds a register service register endpoint payload.
-func NewRegisterPost(body []*PostRequestBody) []*register.Post {
-	v := make([]*register.Post, len(body))
-	for i, val := range body {
-		v[i] = &register.Post{
-			ID:          val.ID,
-			Title:       val.Title,
-			Description: val.Description,
-			Body:        val.Body,
-		}
+// NewRegisterPayload builds a register service register endpoint payload.
+func NewRegisterPayload(body *RegisterRequestBody, key string) *register.RegisterPayload {
+	v := &register.RegisterPayload{}
+	v.Posts = make([]*register.Post, len(body.Posts))
+	for i, val := range body.Posts {
+		v.Posts[i] = unmarshalPostRequestBodyToRegisterPost(val)
 	}
+	v.Key = key
 	return v
+}
+
+// ValidateRegisterRequestBody runs the validations defined on
+// RegisterRequestBody
+func ValidateRegisterRequestBody(body *RegisterRequestBody) (err error) {
+	if body.Posts == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("posts", "body"))
+	}
+	if len(body.Posts) < 1 {
+		err = goa.MergeErrors(err, goa.InvalidLengthError("body.posts", body.Posts, len(body.Posts), 1, true))
+	}
+	return
 }

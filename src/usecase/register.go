@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
-	"fmt"
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/pkg/errors"
+	"goa.design/goa/v3/security"
 	"io/ioutil"
 	"log"
+	"os"
 
 	register "github.com/k-yomo/elastic_blog_search/src/gen/register"
 )
@@ -43,18 +44,25 @@ type Post struct {
 	Body        string `json:"body"`
 }
 
+func (s *registersrvc) APIKeyAuth(ctx context.Context, key string, schema *security.APIKeyScheme) (context.Context, error) {
+	if key != os.Getenv("API_SECRET_KEY") {
+		return nil, register.MakeUnauthenticated(errors.New("invalid api key"))
+	}
+	return ctx, nil
+}
+
 // Register implements register.
-func (s *registersrvc) Register(ctx context.Context, postPayloads []*register.Post) (res int, err error) {
+func (s *registersrvc) Register(ctx context.Context, payload *register.RegisterPayload) (res int, err error) {
 	var bulkIndexParamsByte []byte
-	for _, payload := range postPayloads {
-		post := mapFromPayload(payload)
+	for _, p := range payload.Posts {
+		post := mapFromPostPayload(p)
 		postIndexByte, err := json.Marshal(&IndexParams{Index: &Index{Index: PostsIndex, Type: PostsIndex, ID: post.ID}})
 		if err != nil {
-			return 500, err
+			return 500, register.MakeInternal(err)
 		}
 		postByte, err := json.Marshal(post)
 		if err != nil {
-			return 500, err
+			return 500, register.MakeInternal(err)
 		}
 		bulkIndexParamsByte = append(bulkIndexParamsByte, postIndexByte...)
 		bulkIndexParamsByte = append(bulkIndexParamsByte, []byte("\n")...)
@@ -64,21 +72,26 @@ func (s *registersrvc) Register(ctx context.Context, postPayloads []*register.Po
 
 	response, err := s.esClient.Bulk(bytes.NewReader(bulkIndexParamsByte))
 	if err != nil {
-		return 500, err
+		return 500, register.MakeInternal(errors.Wrap(err, "bulk insert to elasticsearch failed"))
 	}
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return 500, err
+		return 500, register.MakeInternal(errors.Wrap(err, "read response body failed"))
 	}
 	if response.StatusCode >= 400 {
-		return 500, errors.New(string(body))
+		return 500, register.MakeInternal(
+			errors.Errorf(
+				"bulk insert to elasticsearch failed with status: %d, body: %s",
+				response.StatusCode,
+				string(body),
+			),
+		)
 	}
 
-	fmt.Println(string(body))
 	return 201, nil
 }
 
-func mapFromPayload(p *register.Post) *Post {
+func mapFromPostPayload(p *register.Post) *Post {
 	return &Post{
 		ID:          *p.ID,
 		Title:       *p.Title,

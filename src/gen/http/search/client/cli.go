@@ -22,25 +22,23 @@ func BuildSearchPayload(searchSearchQuery string, searchSearchPage string, searc
 	{
 		query = searchSearchQuery
 	}
-	var page *uint
+	var page uint
 	{
 		if searchSearchPage != "" {
 			var v uint64
 			v, err = strconv.ParseUint(searchSearchPage, 10, 64)
-			val := uint(v)
-			page = &val
+			page = uint(v)
 			if err != nil {
 				return nil, fmt.Errorf("invalid value for page, must be UINT")
 			}
 		}
 	}
-	var pageSize *uint
+	var pageSize uint
 	{
 		if searchSearchPageSize != "" {
 			var v uint64
 			v, err = strconv.ParseUint(searchSearchPageSize, 10, 64)
-			val := uint(v)
-			pageSize = &val
+			pageSize = uint(v)
 			if err != nil {
 				return nil, fmt.Errorf("invalid value for pageSize, must be UINT")
 			}
