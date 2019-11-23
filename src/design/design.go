@@ -12,18 +12,17 @@ var _ = API("search", func() {
 	})
 })
 
-var PostsParams = ArrayOf(Type("Post", func() {
+var Post = Type("Post", func() {
 	Attribute("id", String, "Post's id")
 	Attribute("title", String, "Post's title")
 	Attribute("description", String, "Post's description")
 	Attribute("body", String, "Post's body")
-	Required("id", "title", "description", "body")
-}))
+})
 
 var _ = Service("register", func() {
 	Description("register service registers blog posts to be searched")
 	Method("register", func() {
-		Payload(PostsParams, func() {
+		Payload(ArrayOf(Post), func() {
 			MinLength(1)
 		})
 		Result(Int)
@@ -34,6 +33,40 @@ var _ = Service("register", func() {
 	})
 	Error("Unauthorized")
 	Error("BadRequest")
+})
+
+var SearchResult = ResultType("application/vnd.searchresult", func() {
+	TypeName("Post")
+	ContentType("application/json")
+	Attribute("id", String, "Post's id")
+	Attribute("title", String, "Post's title")
+	Attribute("description", String, "Post's description")
+	Required("id", "title", "description")
+})
+
+var _ = Service("search", func() {
+	Description("search service searches blog posts with given params")
+	Method("search", func() {
+		Result(CollectionOf(SearchResult))
+		Payload(func() {
+			Description("search params")
+			Attribute("query", String, "search query")
+			Attribute("page", UInt, "page")
+			Attribute("pageSize", UInt, "results per page")
+			Required("query")
+		})
+		HTTP(func() {
+			GET("/posts/search")
+			Params(func() {
+				Param("query", String, "search query")
+				Param("page", UInt, "page")
+				Param("pageSize", UInt, "results per page")
+				Required("query")
+			})
+			Response(StatusOK)
+		})
+		Error("BadRequest")
+	})
 })
 
 var _ = Service("openapi", func() {

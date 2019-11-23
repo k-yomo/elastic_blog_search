@@ -46,13 +46,6 @@ func DecodeRegisterRequest(mux goahttp.Muxer, decoder func(*http.Request) goahtt
 		if len(body) < 1 {
 			err = goa.MergeErrors(err, goa.InvalidLengthError("body", body, len(body), 1, true))
 		}
-		for _, e := range body {
-			if e != nil {
-				if err2 := ValidatePostRequestBody(e); err2 != nil {
-					err = goa.MergeErrors(err, err2)
-				}
-			}
-		}
 		if err != nil {
 			return nil, err
 		}

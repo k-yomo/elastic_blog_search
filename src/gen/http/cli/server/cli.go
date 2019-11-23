@@ -14,6 +14,7 @@ import (
 	"os"
 
 	registerc "github.com/k-yomo/elastic_blog_search/src/gen/http/register/client"
+	searchc "github.com/k-yomo/elastic_blog_search/src/gen/http/search/client"
 	goahttp "goa.design/goa/v3/http"
 	goa "goa.design/goa/v3/pkg"
 )
@@ -24,6 +25,7 @@ import (
 //
 func UsageCommands() string {
 	return `register register
+search search
 `
 }
 
@@ -31,18 +33,13 @@ func UsageCommands() string {
 func UsageExamples() string {
 	return os.Args[0] + ` register register --body '[
       {
-         "body": "Voluptatum earum dolores qui.",
-         "description": "Ut placeat nihil.",
-         "id": "Eum sed hic ullam.",
-         "title": "Quia quaerat neque debitis."
-      },
-      {
-         "body": "Voluptatum earum dolores qui.",
-         "description": "Ut placeat nihil.",
-         "id": "Eum sed hic ullam.",
-         "title": "Quia quaerat neque debitis."
+         "body": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
+         "description": "Dolores alias incidunt sunt ut veniam.",
+         "id": "Ut placeat nihil.",
+         "title": "Voluptatum earum dolores qui."
       }
    ]'` + "\n" +
+		os.Args[0] + ` search search --query "Quia ipsum omnis repellat nostrum autem." --page 6514126617171776835 --page-size 12386236855430162696` + "\n" +
 		""
 }
 
@@ -60,9 +57,19 @@ func ParseEndpoint(
 
 		registerRegisterFlags    = flag.NewFlagSet("register", flag.ExitOnError)
 		registerRegisterBodyFlag = registerRegisterFlags.String("body", "REQUIRED", "")
+
+		searchFlags = flag.NewFlagSet("search", flag.ContinueOnError)
+
+		searchSearchFlags        = flag.NewFlagSet("search", flag.ExitOnError)
+		searchSearchQueryFlag    = searchSearchFlags.String("query", "REQUIRED", "")
+		searchSearchPageFlag     = searchSearchFlags.String("page", "", "")
+		searchSearchPageSizeFlag = searchSearchFlags.String("page-size", "", "")
 	)
 	registerFlags.Usage = registerUsage
 	registerRegisterFlags.Usage = registerRegisterUsage
+
+	searchFlags.Usage = searchUsage
+	searchSearchFlags.Usage = searchSearchUsage
 
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		return nil, nil, err
@@ -81,6 +88,8 @@ func ParseEndpoint(
 		switch svcn {
 		case "register":
 			svcf = registerFlags
+		case "search":
+			svcf = searchFlags
 		default:
 			return nil, nil, fmt.Errorf("unknown service %q", svcn)
 		}
@@ -100,6 +109,13 @@ func ParseEndpoint(
 			switch epn {
 			case "register":
 				epf = registerRegisterFlags
+
+			}
+
+		case "search":
+			switch epn {
+			case "search":
+				epf = searchSearchFlags
 
 			}
 
@@ -129,6 +145,13 @@ func ParseEndpoint(
 			case "register":
 				endpoint = c.Register()
 				data, err = registerc.BuildRegisterPayload(*registerRegisterBodyFlag)
+			}
+		case "search":
+			c := searchc.NewClient(scheme, host, doer, enc, dec, restore)
+			switch epn {
+			case "search":
+				endpoint = c.Search()
+				data, err = searchc.BuildSearchPayload(*searchSearchQueryFlag, *searchSearchPageFlag, *searchSearchPageSizeFlag)
 			}
 		}
 	}
@@ -161,17 +184,37 @@ Register implements register.
 Example:
     `+os.Args[0]+` register register --body '[
       {
-         "body": "Voluptatum earum dolores qui.",
-         "description": "Ut placeat nihil.",
-         "id": "Eum sed hic ullam.",
-         "title": "Quia quaerat neque debitis."
-      },
-      {
-         "body": "Voluptatum earum dolores qui.",
-         "description": "Ut placeat nihil.",
-         "id": "Eum sed hic ullam.",
-         "title": "Quia quaerat neque debitis."
+         "body": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
+         "description": "Dolores alias incidunt sunt ut veniam.",
+         "id": "Ut placeat nihil.",
+         "title": "Voluptatum earum dolores qui."
       }
    ]'
+`, os.Args[0])
+}
+
+// searchUsage displays the usage of the search command and its subcommands.
+func searchUsage() {
+	fmt.Fprintf(os.Stderr, `search service searches blog posts with given params
+Usage:
+    %s [globalflags] search COMMAND [flags]
+
+COMMAND:
+    search: Search implements search.
+
+Additional help:
+    %s search COMMAND --help
+`, os.Args[0], os.Args[0])
+}
+func searchSearchUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] search search -query STRING -page UINT -page-size UINT
+
+Search implements search.
+    -query STRING: 
+    -page UINT: 
+    -page-size UINT: 
+
+Example:
+    `+os.Args[0]+` search search --query "Quia ipsum omnis repellat nostrum autem." --page 6514126617171776835 --page-size 12386236855430162696
 `, os.Args[0])
 }

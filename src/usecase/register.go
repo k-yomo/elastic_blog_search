@@ -1,4 +1,4 @@
-package search
+package usecase
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 
 const PostsIndex = "posts"
 
-// register service example implementation.
+// register service implementation.
 type registersrvc struct {
 	logger   *log.Logger
 	esClient *elasticsearch.Client
@@ -44,7 +44,6 @@ type Post struct {
 
 // Register implements register.
 func (s *registersrvc) Register(ctx context.Context, postPayloads []*register.Post) (res int, err error) {
-	s.esClient.Index(PostsIndex)
 	var bulkIndexParamsByte []byte
 	for _, payload := range postPayloads {
 		post := mapFromPayload(payload)
@@ -79,9 +78,9 @@ func (s *registersrvc) Register(ctx context.Context, postPayloads []*register.Po
 
 func mapFromPayload(p *register.Post) *Post {
 	return &Post{
-		ID:          p.ID,
-		Title:       p.Title,
-		Description: p.Description,
-		Body:        p.Body,
+		ID:          *p.ID,
+		Title:       *p.Title,
+		Description: *p.Description,
+		Body:        *p.Body,
 	}
 }

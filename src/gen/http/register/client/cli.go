@@ -22,7 +22,7 @@ func BuildRegisterPayload(registerRegisterBody string) ([]*register.Post, error)
 	{
 		err = json.Unmarshal([]byte(registerRegisterBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'[\n      {\n         \"body\": \"Voluptatum earum dolores qui.\",\n         \"description\": \"Ut placeat nihil.\",\n         \"id\": \"Eum sed hic ullam.\",\n         \"title\": \"Quia quaerat neque debitis.\"\n      },\n      {\n         \"body\": \"Voluptatum earum dolores qui.\",\n         \"description\": \"Ut placeat nihil.\",\n         \"id\": \"Eum sed hic ullam.\",\n         \"title\": \"Quia quaerat neque debitis.\"\n      }\n   ]'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'[\n      {\n         \"body\": \"Assumenda nesciunt nesciunt quasi voluptates perferendis.\",\n         \"description\": \"Dolores alias incidunt sunt ut veniam.\",\n         \"id\": \"Ut placeat nihil.\",\n         \"title\": \"Voluptatum earum dolores qui.\"\n      }\n   ]'")
 		}
 	}
 	v := make([]*register.Post, len(body))
