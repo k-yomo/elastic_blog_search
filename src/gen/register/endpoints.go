@@ -11,6 +11,7 @@ import (
 	"context"
 
 	goa "goa.design/goa/v3/pkg"
+	"goa.design/goa/v3/security"
 )
 
 // Endpoints wraps the "register" service endpoints.
@@ -20,8 +21,10 @@ type Endpoints struct {
 
 // NewEndpoints wraps the methods of the "register" service with endpoints.
 func NewEndpoints(s Service) *Endpoints {
+	// Casting service to Auther interface
+	a := s.(Auther)
 	return &Endpoints{
-		Register: NewRegisterEndpoint(s),
+		Register: NewRegisterEndpoint(s, a.APIKeyAuth),
 	}
 }
 
@@ -32,9 +35,19 @@ func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
 
 // NewRegisterEndpoint returns an endpoint function that calls the method
 // "register" of service "register".
-func NewRegisterEndpoint(s Service) goa.Endpoint {
+func NewRegisterEndpoint(s Service, authAPIKeyFn security.AuthAPIKeyFunc) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
-		p := req.([]*Post)
+		p := req.(*RegisterPayload)
+		var err error
+		sc := security.APIKeyScheme{
+			Name:           "api_key",
+			Scopes:         []string{},
+			RequiredScopes: []string{},
+		}
+		ctx, err = authAPIKeyFn(ctx, p.Key, &sc)
+		if err != nil {
+			return nil, err
+		}
 		return s.Register(ctx, p)
 	}
 }

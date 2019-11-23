@@ -12,6 +12,10 @@ var _ = API("search", func() {
 	})
 })
 
+var APIKeyAuth = APIKeySecurity("api_key", func() {
+	Description("secret api key for authentication")
+})
+
 var Post = Type("Post", func() {
 	Attribute("id", String, "Post's id")
 	Attribute("title", String, "Post's title")
@@ -21,18 +25,29 @@ var Post = Type("Post", func() {
 
 var _ = Service("register", func() {
 	Description("register service registers blog posts to be searched")
+	Security(APIKeyAuth)
 	Method("register", func() {
-		Payload(ArrayOf(Post), func() {
-			MinLength(1)
+		Payload(func() {
+			APIKey("api_key", "key", String, func() {
+				Description("API key used to perform authorization")
+			})
+			Attribute("posts", ArrayOf(Post), func() {
+				MinLength(1)
+			})
+			Required("key", "posts")
 		})
 		Result(Int)
 		HTTP(func() {
 			POST("/posts/bulk")
+			Header("key:Authorization")
 			Response(StatusCreated)
 		})
 	})
-	Error("Unauthorized")
-	Error("BadRequest")
+	Error("badRequest")
+	Error("unauthenticated")
+	Error("internal", func() {
+		Fault()
+	})
 })
 
 var SearchResult = ResultType("application/vnd.posts", func() {
@@ -47,30 +62,39 @@ var SearchResult = ResultType("application/vnd.posts", func() {
 var _ = Service("search", func() {
 	Description("search service searches blog posts with given params")
 	Method("search", func() {
+		Payload(func() {
+			Description("search params")
+			Attribute("query", String, "search query")
+			Attribute("page", UInt, func() {
+				Description("page")
+				Default(1)
+			})
+			Attribute("pageSize", UInt, func() {
+				Description("results per page")
+				Default(50)
+			})
+			Required("query")
+		})
 		Result(func() {
 			Attribute("posts", CollectionOf(SearchResult))
 			Attribute("page", UInt)
 			Attribute("totalPage", UInt)
 			Required("posts", "page", "totalPage")
 		})
-		Payload(func() {
-			Description("search params")
-			Attribute("query", String, "search query")
-			Attribute("page", UInt, "page")
-			Attribute("pageSize", UInt, "results per page")
-			Required("query")
-		})
 		HTTP(func() {
 			GET("/posts/search")
 			Params(func() {
-				Param("query", String, "search query")
-				Param("page", UInt, "page")
-				Param("pageSize", UInt, "results per page")
+				Param("query", String)
+				Param("page", UInt)
+				Param("pageSize", UInt)
 				Required("query")
 			})
 			Response(StatusOK)
 		})
 		Error("BadRequest")
+		Error("internal", func() {
+			Fault()
+		})
 	})
 })
 

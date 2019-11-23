@@ -37,11 +37,12 @@ func (c *Client) BuildRegisterRequest(ctx context.Context, v interface{}) (*http
 // register server.
 func EncodeRegisterRequest(encoder func(*http.Request) goahttp.Encoder) func(*http.Request, interface{}) error {
 	return func(req *http.Request, v interface{}) error {
-		p, ok := v.([]*register.Post)
+		p, ok := v.(*register.RegisterPayload)
 		if !ok {
-			return goahttp.ErrInvalidType("register", "register", "[]*register.Post", v)
+			return goahttp.ErrInvalidType("register", "register", "*register.RegisterPayload", v)
 		}
-		body := NewPostRequestBody(p)
+		req.Header.Set("Authorization", p.Key)
+		body := NewRegisterRequestBody(p)
 		if err := encoder(req).Encode(&body); err != nil {
 			return goahttp.ErrEncodingError("register", "register", err)
 		}
@@ -82,4 +83,30 @@ func DecodeRegisterResponse(decoder func(*http.Response) goahttp.Decoder, restor
 			return nil, goahttp.ErrInvalidResponse("register", "register", resp.StatusCode, string(body))
 		}
 	}
+}
+
+// marshalRegisterPostToPostRequestBody builds a value of type *PostRequestBody
+// from a value of type *register.Post.
+func marshalRegisterPostToPostRequestBody(v *register.Post) *PostRequestBody {
+	res := &PostRequestBody{
+		ID:          v.ID,
+		Title:       v.Title,
+		Description: v.Description,
+		Body:        v.Body,
+	}
+
+	return res
+}
+
+// marshalPostRequestBodyToRegisterPost builds a value of type *register.Post
+// from a value of type *PostRequestBody.
+func marshalPostRequestBodyToRegisterPost(v *PostRequestBody) *register.Post {
+	res := &register.Post{
+		ID:          v.ID,
+		Title:       v.Title,
+		Description: v.Description,
+		Body:        v.Body,
+	}
+
+	return res
 }

@@ -28,6 +28,7 @@ func NewClient(search goa.Endpoint) *Client {
 // Search calls the "search" endpoint of the "search" service.
 // Search may return the following errors:
 //	- "BadRequest" (type *goa.ServiceError)
+//	- "internal" (type *goa.ServiceError)
 //	- error: internal error
 func (c *Client) Search(ctx context.Context, p *SearchPayload) (res *SearchResult, err error) {
 	var ires interface{}

@@ -12,27 +12,40 @@ import (
 	"fmt"
 
 	register "github.com/k-yomo/elastic_blog_search/src/gen/register"
+	goa "goa.design/goa/v3/pkg"
 )
 
 // BuildRegisterPayload builds the payload for the register register endpoint
 // from CLI flags.
-func BuildRegisterPayload(registerRegisterBody string) ([]*register.Post, error) {
+func BuildRegisterPayload(registerRegisterBody string, registerRegisterKey string) (*register.RegisterPayload, error) {
 	var err error
-	var body []*PostRequestBody
+	var body RegisterRequestBody
 	{
 		err = json.Unmarshal([]byte(registerRegisterBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'[\n      {\n         \"body\": \"Assumenda nesciunt nesciunt quasi voluptates perferendis.\",\n         \"description\": \"Dolores alias incidunt sunt ut veniam.\",\n         \"id\": \"Nihil quisquam.\",\n         \"title\": \"Earum dolores qui.\"\n      }\n   ]'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"posts\": [\n         {\n            \"body\": \"Tempore voluptas cumque voluptatem aut facere.\",\n            \"description\": \"Assumenda nesciunt nesciunt quasi voluptates perferendis.\",\n            \"id\": \"Earum dolores qui.\",\n            \"title\": \"Dolores alias incidunt sunt ut veniam.\"\n         },\n         {\n            \"body\": \"Tempore voluptas cumque voluptatem aut facere.\",\n            \"description\": \"Assumenda nesciunt nesciunt quasi voluptates perferendis.\",\n            \"id\": \"Earum dolores qui.\",\n            \"title\": \"Dolores alias incidunt sunt ut veniam.\"\n         },\n         {\n            \"body\": \"Tempore voluptas cumque voluptatem aut facere.\",\n            \"description\": \"Assumenda nesciunt nesciunt quasi voluptates perferendis.\",\n            \"id\": \"Earum dolores qui.\",\n            \"title\": \"Dolores alias incidunt sunt ut veniam.\"\n         }\n      ]\n   }'")
+		}
+		if body.Posts == nil {
+			err = goa.MergeErrors(err, goa.MissingFieldError("posts", "body"))
+		}
+		if len(body.Posts) < 1 {
+			err = goa.MergeErrors(err, goa.InvalidLengthError("body.posts", body.Posts, len(body.Posts), 1, true))
+		}
+		if err != nil {
+			return nil, err
 		}
 	}
-	v := make([]*register.Post, len(body))
-	for i, val := range body {
-		v[i] = &register.Post{
-			ID:          val.ID,
-			Title:       val.Title,
-			Description: val.Description,
-			Body:        val.Body,
+	var key string
+	{
+		key = registerRegisterKey
+	}
+	v := &register.RegisterPayload{}
+	if body.Posts != nil {
+		v.Posts = make([]*register.Post, len(body.Posts))
+		for i, val := range body.Posts {
+			v.Posts[i] = marshalPostRequestBodyToRegisterPost(val)
 		}
 	}
+	v.Key = key
 	return v, nil
 }

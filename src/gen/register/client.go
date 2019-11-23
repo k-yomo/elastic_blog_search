@@ -26,7 +26,7 @@ func NewClient(register goa.Endpoint) *Client {
 }
 
 // Register calls the "register" endpoint of the "register" service.
-func (c *Client) Register(ctx context.Context, p []*Post) (res int, err error) {
+func (c *Client) Register(ctx context.Context, p *RegisterPayload) (res int, err error) {
 	var ires interface{}
 	ires, err = c.RegisterEndpoint(ctx, p)
 	if err != nil {

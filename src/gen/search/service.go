@@ -34,9 +34,9 @@ type SearchPayload struct {
 	// search query
 	Query string
 	// page
-	Page *uint
+	Page uint
 	// results per page
-	PageSize *uint
+	PageSize uint
 }
 
 // SearchResult is the result type of the search service search method.
@@ -63,5 +63,15 @@ func MakeBadRequest(err error) *goa.ServiceError {
 		Name:    "BadRequest",
 		ID:      goa.NewErrorID(),
 		Message: err.Error(),
+	}
+}
+
+// MakeInternal builds a goa.ServiceError from an error.
+func MakeInternal(err error) *goa.ServiceError {
+	return &goa.ServiceError{
+		Name:    "internal",
+		ID:      goa.NewErrorID(),
+		Message: err.Error(),
+		Fault:   true,
 	}
 }

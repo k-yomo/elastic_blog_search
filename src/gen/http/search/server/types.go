@@ -49,7 +49,7 @@ func NewSearchResponseBody(res *search.SearchResult) *SearchResponseBody {
 }
 
 // NewSearchPayload builds a search service search endpoint payload.
-func NewSearchPayload(query string, page *uint, pageSize *uint) *search.SearchPayload {
+func NewSearchPayload(query string, page uint, pageSize uint) *search.SearchPayload {
 	return &search.SearchPayload{
 		Query:    query,
 		Page:     page,

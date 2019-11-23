@@ -11,6 +11,12 @@ import (
 	register "github.com/k-yomo/elastic_blog_search/src/gen/register"
 )
 
+// RegisterRequestBody is the type of the "register" service "register"
+// endpoint HTTP request body.
+type RegisterRequestBody struct {
+	Posts []*PostRequestBody `form:"posts" json:"posts" xml:"posts"`
+}
+
 // PostRequestBody is used to define fields on request body types.
 type PostRequestBody struct {
 	// Post's id
@@ -23,16 +29,14 @@ type PostRequestBody struct {
 	Body *string `form:"body,omitempty" json:"body,omitempty" xml:"body,omitempty"`
 }
 
-// NewPostRequestBody builds the HTTP request body from the payload of the
+// NewRegisterRequestBody builds the HTTP request body from the payload of the
 // "register" endpoint of the "register" service.
-func NewPostRequestBody(p []*register.Post) []*PostRequestBody {
-	body := make([]*PostRequestBody, len(p))
-	for i, val := range p {
-		body[i] = &PostRequestBody{
-			ID:          val.ID,
-			Title:       val.Title,
-			Description: val.Description,
-			Body:        val.Body,
+func NewRegisterRequestBody(p *register.RegisterPayload) *RegisterRequestBody {
+	body := &RegisterRequestBody{}
+	if p.Posts != nil {
+		body.Posts = make([]*PostRequestBody, len(p.Posts))
+		for i, val := range p.Posts {
+			body.Posts[i] = marshalRegisterPostToPostRequestBody(val)
 		}
 	}
 	return body

@@ -11,12 +11,19 @@ import (
 	"context"
 
 	goa "goa.design/goa/v3/pkg"
+	"goa.design/goa/v3/security"
 )
 
 // register service registers blog posts to be searched
 type Service interface {
 	// Register implements register.
-	Register(context.Context, []*Post) (res int, err error)
+	Register(context.Context, *RegisterPayload) (res int, err error)
+}
+
+// Auther defines the authorization functions to be implemented by the service.
+type Auther interface {
+	// APIKeyAuth implements the authorization logic for the APIKey security scheme.
+	APIKeyAuth(ctx context.Context, key string, schema *security.APIKeyScheme) (context.Context, error)
 }
 
 // ServiceName is the name of the service as defined in the design. This is the
@@ -29,6 +36,13 @@ const ServiceName = "register"
 // MethodKey key.
 var MethodNames = [1]string{"register"}
 
+// RegisterPayload is the payload type of the register service register method.
+type RegisterPayload struct {
+	// API key used to perform authorization
+	Key   string
+	Posts []*Post
+}
+
 type Post struct {
 	// Post's id
 	ID *string
@@ -40,20 +54,30 @@ type Post struct {
 	Body *string
 }
 
-// MakeUnauthorized builds a goa.ServiceError from an error.
-func MakeUnauthorized(err error) *goa.ServiceError {
+// MakeBadRequest builds a goa.ServiceError from an error.
+func MakeBadRequest(err error) *goa.ServiceError {
 	return &goa.ServiceError{
-		Name:    "Unauthorized",
+		Name:    "badRequest",
 		ID:      goa.NewErrorID(),
 		Message: err.Error(),
 	}
 }
 
-// MakeBadRequest builds a goa.ServiceError from an error.
-func MakeBadRequest(err error) *goa.ServiceError {
+// MakeUnauthenticated builds a goa.ServiceError from an error.
+func MakeUnauthenticated(err error) *goa.ServiceError {
 	return &goa.ServiceError{
-		Name:    "BadRequest",
+		Name:    "unauthenticated",
 		ID:      goa.NewErrorID(),
 		Message: err.Error(),
+	}
+}
+
+// MakeInternal builds a goa.ServiceError from an error.
+func MakeInternal(err error) *goa.ServiceError {
+	return &goa.ServiceError{
+		Name:    "internal",
+		ID:      goa.NewErrorID(),
+		Message: err.Error(),
+		Fault:   true,
 	}
 }

@@ -20,14 +20,18 @@ paths:
       summary: register register
       operationId: register#register
       parameters:
-      - name: array
+      - name: Authorization
+        in: header
+        description: API key used to perform authorization
+        required: true
+        type: string
+      - name: RegisterRequestBody
         in: body
         required: true
         schema:
-          type: array
-          items:
-            $ref: '#/definitions/PostRequestBody'
-          minItems: 1
+          $ref: '#/definitions/RegisterRegisterRequestBody'
+          required:
+          - posts
       responses:
         "201":
           description: Created response.
@@ -36,6 +40,8 @@ paths:
             format: int64
       schemes:
       - http
+      security:
+      - api_key_header_Authorization: []
   /posts/search:
     get:
       tags:
@@ -53,11 +59,13 @@ paths:
         description: page
         required: false
         type: integer
+        default: 1
       - name: pageSize
         in: query
         description: results per page
         required: false
         type: integer
+        default: 50
       responses:
         "200":
           description: OK response.
@@ -88,24 +96,24 @@ definitions:
       body:
         type: string
         description: Post's body
-        example: Veritatis omnis.
+        example: Minus quam ea.
       description:
         type: string
         description: Post's description
-        example: Consequatur sit quis repellendus.
+        example: Blanditiis sed et animi est architecto.
       id:
         type: string
         description: Post's id
-        example: Voluptatibus corrupti possimus.
+        example: Consequatur sit quis repellendus.
       title:
         type: string
         description: Post's title
-        example: Molestiae nemo quo enim corrupti quasi.
+        example: Veritatis omnis.
     example:
-      body: Hic delectus sit animi velit unde.
-      description: Corrupti molestiae sequi.
-      id: Blanditiis sed et animi est architecto.
-      title: Minus quam ea.
+      body: Perspiciatis necessitatibus ab dolor.
+      description: Est autem.
+      id: Corrupti molestiae sequi.
+      title: Hic delectus sit animi velit unde.
   PostResponseBody:
     title: 'Mediatype identifier: application/vnd.posts; view=default'
     type: object
@@ -113,20 +121,20 @@ definitions:
       description:
         type: string
         description: Post's description
-        example: Quia sit porro.
+        example: Corrupti ipsam reprehenderit.
       id:
         type: string
         description: Post's id
-        example: Est autem.
+        example: Porro repellendus et.
       title:
         type: string
         description: Post's title
-        example: Perspiciatis necessitatibus ab dolor.
+        example: Nisi nostrum nobis ratione.
     description: PostResponseBody result type (default view)
     example:
-      description: Quia suscipit aut.
-      id: Et non.
-      title: Nostrum nobis ratione rerum corrupti ipsam.
+      description: Et omnis ut sequi est qui omnis.
+      id: Suscipit aut sit perferendis blanditiis ea quo.
+      title: Repudiandae et.
     required:
     - id
     - title
@@ -139,46 +147,68 @@ definitions:
     description: PostCollectionResponseBody is the result type for an array of PostResponseBody
       (default view)
     example:
-    - description: Tenetur autem libero sint voluptatem.
-      id: Est ipsa laboriosam assumenda veritatis sapiente ullam.
-      title: Debitis asperiores quasi.
-    - description: Tenetur autem libero sint voluptatem.
-      id: Est ipsa laboriosam assumenda veritatis sapiente ullam.
-      title: Debitis asperiores quasi.
-    - description: Tenetur autem libero sint voluptatem.
-      id: Est ipsa laboriosam assumenda veritatis sapiente ullam.
-      title: Debitis asperiores quasi.
-    - description: Tenetur autem libero sint voluptatem.
-      id: Est ipsa laboriosam assumenda veritatis sapiente ullam.
-      title: Debitis asperiores quasi.
+    - description: Possimus harum molestiae nemo quo enim.
+      id: Aut tenetur autem libero.
+      title: Voluptatem voluptatem possimus illo voluptatibus.
+    - description: Possimus harum molestiae nemo quo enim.
+      id: Aut tenetur autem libero.
+      title: Voluptatem voluptatem possimus illo voluptatibus.
+    - description: Possimus harum molestiae nemo quo enim.
+      id: Aut tenetur autem libero.
+      title: Voluptatem voluptatem possimus illo voluptatibus.
+  RegisterRegisterRequestBody:
+    title: RegisterRegisterRequestBody
+    type: object
+    properties:
+      posts:
+        type: array
+        items:
+          $ref: '#/definitions/PostRequestBody'
+        example:
+        - body: Tempore voluptas cumque voluptatem aut facere.
+          description: Assumenda nesciunt nesciunt quasi voluptates perferendis.
+          id: Earum dolores qui.
+          title: Dolores alias incidunt sunt ut veniam.
+        minItems: 1
+    example:
+      posts:
+      - body: Tempore voluptas cumque voluptatem aut facere.
+        description: Assumenda nesciunt nesciunt quasi voluptates perferendis.
+        id: Earum dolores qui.
+        title: Dolores alias incidunt sunt ut veniam.
+    required:
+    - posts
   SearchSearchResponseBody:
     title: SearchSearchResponseBody
     type: object
     properties:
       page:
         type: integer
-        example: 2817857733486969668
+        example: 9133816778920279665
         format: int64
       posts:
         $ref: '#/definitions/PostResponseBodyCollection'
       totalPage:
         type: integer
-        example: 2385856216989013136
+        example: 3659491618346060683
         format: int64
     example:
-      page: 11953625375194037860
+      page: 9617362754030863365
       posts:
-      - description: Tenetur autem libero sint voluptatem.
-        id: Est ipsa laboriosam assumenda veritatis sapiente ullam.
-        title: Debitis asperiores quasi.
-      - description: Tenetur autem libero sint voluptatem.
-        id: Est ipsa laboriosam assumenda veritatis sapiente ullam.
-        title: Debitis asperiores quasi.
-      - description: Tenetur autem libero sint voluptatem.
-        id: Est ipsa laboriosam assumenda veritatis sapiente ullam.
-        title: Debitis asperiores quasi.
-      totalPage: 6673844434372774317
+      - description: Possimus harum molestiae nemo quo enim.
+        id: Aut tenetur autem libero.
+        title: Voluptatem voluptatem possimus illo voluptatibus.
+      - description: Possimus harum molestiae nemo quo enim.
+        id: Aut tenetur autem libero.
+        title: Voluptatem voluptatem possimus illo voluptatibus.
+      totalPage: 4543024737980907117
     required:
     - posts
     - page
     - totalPage
+securityDefinitions:
+  api_key_header_Authorization:
+    type: apiKey
+    description: secret api key for authentication
+    name: Authorization
+    in: header

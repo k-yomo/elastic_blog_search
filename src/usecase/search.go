@@ -24,11 +24,6 @@ func NewSearch(logger *log.Logger, esClient *elasticsearch.Client) search.Servic
 	return &searchrsrvc{logger, esClient}
 }
 
-const (
-	defaultPage     = 1
-	defaultPageSize = 50
-)
-
 type searchResult struct {
 	Hits hits `json:"hits"`
 }
@@ -54,21 +49,9 @@ type source struct {
 }
 
 func (s *searchrsrvc) Search(ctx context.Context, p *search.SearchPayload) (res *search.SearchResult, err error) {
-	var page, pageSize uint
-	if p.Page != nil {
-		page = *p.Page
-	} else {
-		page = defaultPage
-	}
-	if p.PageSize != nil {
-		pageSize = *p.PageSize
-	} else {
-		pageSize = defaultPageSize
-	}
-
 	response, err := s.esClient.Search(
 		s.esClient.Search.WithIndex(PostsIndex),
-		s.esClient.Search.WithBody(s.buildQuery(p.Query, page, pageSize)),
+		s.esClient.Search.WithBody(s.buildQuery(p.Query, p.Page, p.PageSize)),
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "search request to elasticsearch failed")
@@ -103,8 +86,8 @@ func (s *searchrsrvc) Search(ctx context.Context, p *search.SearchPayload) (res 
 
 	return &search.SearchResult{
 		Posts:     posts,
-		Page:      page,
-		TotalPage: calcTotalPage(uint(sr.Hits.Total), pageSize),
+		Page:      p.Page,
+		TotalPage: calcTotalPage(uint(sr.Hits.Total), p.PageSize),
 	}, nil
 }
 
