@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/k-yomo/elastic_blog_search/src/usecase"
 	"log"
 	"net/url"
 	"os"
@@ -12,8 +13,8 @@ import (
 	"strings"
 	"sync"
 
-	search "github.com/k-yomo/elastic_blog_search/src"
 	register "github.com/k-yomo/elastic_blog_search/src/gen/register"
+	search "github.com/k-yomo/elastic_blog_search/src/gen/search"
 )
 
 func main() {
@@ -28,37 +29,15 @@ func main() {
 	)
 	flag.Parse()
 
-	// Setup logger. Replace logger with your own log package of choice.
 	var (
-		logger *log.Logger
-	)
-	{
-		logger = log.New(os.Stderr, "[search] ", log.Ltime)
-	}
-
-	var (
-		esClient *elasticsearch.Client
-	)
-	{
+		logger      = log.New(os.Stderr, "[searchapi] ", log.Ltime)
 		esClient, _ = elasticsearch.NewDefaultClient()
-	}
-
-	// Initialize the services.
-	var (
-		registerSvc register.Service
 	)
-	{
-		registerSvc = search.NewRegister(logger, esClient)
-	}
 
-	// Wrap the services in endpoints that can be invoked from other services
-	// potentially running in different processes.
 	var (
-		registerEndpoints *register.Endpoints
+		registerEndpoints = register.NewEndpoints(usecase.NewRegister(logger, esClient))
+		searchEndpoints   = search.NewEndpoints(usecase.NewSearch(logger, esClient))
 	)
-	{
-		registerEndpoints = register.NewEndpoints(registerSvc)
-	}
 
 	// Create channel used by both the signal handler and server goroutines
 	// to notify the main goroutine when to stop the server.
@@ -97,7 +76,7 @@ func main() {
 			} else if u.Port() == "" {
 				u.Host += ":80"
 			}
-			handleHTTPServer(ctx, u, registerEndpoints, &wg, errc, logger, *dbgF)
+			handleHTTPServer(ctx, u, registerEndpoints, searchEndpoints, &wg, errc, logger, *dbgF)
 		}
 
 	default:

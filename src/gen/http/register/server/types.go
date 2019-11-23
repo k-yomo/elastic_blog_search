@@ -9,7 +9,6 @@ package server
 
 import (
 	register "github.com/k-yomo/elastic_blog_search/src/gen/register"
-	goa "goa.design/goa/v3/pkg"
 )
 
 // PostRequestBody is used to define fields on request body types.
@@ -29,28 +28,11 @@ func NewRegisterPost(body []*PostRequestBody) []*register.Post {
 	v := make([]*register.Post, len(body))
 	for i, val := range body {
 		v[i] = &register.Post{
-			ID:          *val.ID,
-			Title:       *val.Title,
-			Description: *val.Description,
-			Body:        *val.Body,
+			ID:          val.ID,
+			Title:       val.Title,
+			Description: val.Description,
+			Body:        val.Body,
 		}
 	}
 	return v
-}
-
-// ValidatePostRequestBody runs the validations defined on PostRequestBody
-func ValidatePostRequestBody(body *PostRequestBody) (err error) {
-	if body.ID == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
-	}
-	if body.Title == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("title", "body"))
-	}
-	if body.Description == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("description", "body"))
-	}
-	if body.Body == nil {
-		err = goa.MergeErrors(err, goa.MissingFieldError("body", "body"))
-	}
-	return
 }

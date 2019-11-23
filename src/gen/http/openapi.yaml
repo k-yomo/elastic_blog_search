@@ -36,6 +36,35 @@ paths:
             format: int64
       schemes:
       - http
+  /posts/search:
+    get:
+      tags:
+      - search
+      summary: search search
+      operationId: search#search
+      parameters:
+      - name: query
+        in: query
+        description: search query
+        required: true
+        type: string
+      - name: page
+        in: query
+        description: page
+        required: false
+        type: integer
+      - name: pageSize
+        in: query
+        description: results per page
+        required: false
+        type: integer
+      responses:
+        "200":
+          description: OK response.
+          schema:
+            $ref: '#/definitions/SearchPostResponseCollection'
+      schemes:
+      - http
   /swagger.json:
     get:
       summary: Download ../gen/http/openapi.json
@@ -55,26 +84,63 @@ definitions:
       body:
         type: string
         description: Post's body
-        example: Cumque voluptatem aut facere quia ipsum.
+        example: A hic delectus sit animi velit unde.
       description:
         type: string
         description: Post's description
-        example: Exercitationem tempore.
+        example: Ea esse corrupti molestiae.
       id:
         type: string
         description: Post's id
-        example: Rerum assumenda nesciunt.
+        example: A blanditiis sed et animi est.
       title:
         type: string
         description: Post's title
-        example: Quasi voluptates.
+        example: Eos minus.
     example:
-      body: Debitis asperiores quasi.
-      description: Ipsa laboriosam assumenda veritatis sapiente ullam.
-      id: Repellat nostrum autem.
-      title: Ipsam nemo voluptatem.
+      body: Et non.
+      description: Quia sit porro.
+      id: Est autem.
+      title: Perspiciatis necessitatibus ab dolor.
+  PostResponse:
+    title: 'Mediatype identifier: application/vnd.searchresult; view=default'
+    type: object
+    properties:
+      description:
+        type: string
+        description: Post's description
+        example: Perferendis blanditiis.
+      id:
+        type: string
+        description: Post's id
+        example: Nostrum nobis ratione rerum corrupti ipsam.
+      title:
+        type: string
+        description: Post's title
+        example: Quia suscipit aut.
+    description: PostResponse result type (default view)
+    example:
+      description: Non sunt architecto unde et ea facilis.
+      id: Quo aliquam repudiandae et enim et.
+      title: Ut sequi est qui omnis.
     required:
     - id
     - title
     - description
-    - body
+  SearchPostResponseCollection:
+    title: 'Mediatype identifier: application/vnd.searchresult; type=collection; view=default'
+    type: array
+    items:
+      $ref: '#/definitions/PostResponse'
+    description: SearchResponseBody is the result type for an array of PostResponse
+      (default view)
+    example:
+    - description: Libero sint voluptatem voluptatem possimus.
+      id: Voluptatem est ipsa laboriosam assumenda veritatis.
+      title: Ullam pariatur debitis asperiores quasi aut tenetur.
+    - description: Libero sint voluptatem voluptatem possimus.
+      id: Voluptatem est ipsa laboriosam assumenda veritatis.
+      title: Ullam pariatur debitis asperiores quasi aut tenetur.
+    - description: Libero sint voluptatem voluptatem possimus.
+      id: Voluptatem est ipsa laboriosam assumenda veritatis.
+      title: Ullam pariatur debitis asperiores quasi aut tenetur.

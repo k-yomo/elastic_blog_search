@@ -31,13 +31,13 @@ var MethodNames = [1]string{"register"}
 
 type Post struct {
 	// Post's id
-	ID string
+	ID *string
 	// Post's title
-	Title string
+	Title *string
 	// Post's description
-	Description string
+	Description *string
 	// Post's body
-	Body string
+	Body *string
 }
 
 // MakeUnauthorized builds a goa.ServiceError from an error.

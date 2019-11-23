@@ -14,13 +14,13 @@ import (
 // PostRequestBody is used to define fields on request body types.
 type PostRequestBody struct {
 	// Post's id
-	ID string `form:"id" json:"id" xml:"id"`
+	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
 	// Post's title
-	Title string `form:"title" json:"title" xml:"title"`
+	Title *string `form:"title,omitempty" json:"title,omitempty" xml:"title,omitempty"`
 	// Post's description
-	Description string `form:"description" json:"description" xml:"description"`
+	Description *string `form:"description,omitempty" json:"description,omitempty" xml:"description,omitempty"`
 	// Post's body
-	Body string `form:"body" json:"body" xml:"body"`
+	Body *string `form:"body,omitempty" json:"body,omitempty" xml:"body,omitempty"`
 }
 
 // NewPostRequestBody builds the HTTP request body from the payload of the
