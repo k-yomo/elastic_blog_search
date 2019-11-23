@@ -8,16 +8,23 @@
 package client
 
 import (
-	searchviews "github.com/k-yomo/elastic_blog_search/src/gen/search/views"
+	search "github.com/k-yomo/elastic_blog_search/src/gen/search"
 	goa "goa.design/goa/v3/pkg"
 )
 
 // SearchResponseBody is the type of the "search" service "search" endpoint
 // HTTP response body.
-type SearchResponseBody []*PostResponse
+type SearchResponseBody struct {
+	Posts     PostCollectionResponseBody `form:"posts,omitempty" json:"posts,omitempty" xml:"posts,omitempty"`
+	Page      *uint                      `form:"page,omitempty" json:"page,omitempty" xml:"page,omitempty"`
+	TotalPage *uint                      `form:"totalPage,omitempty" json:"totalPage,omitempty" xml:"totalPage,omitempty"`
+}
 
-// PostResponse is used to define fields on response body types.
-type PostResponse struct {
+// PostCollectionResponseBody is used to define fields on response body types.
+type PostCollectionResponseBody []*PostResponseBody
+
+// PostResponseBody is used to define fields on response body types.
+type PostResponseBody struct {
 	// Post's id
 	ID *string `form:"id,omitempty" json:"id,omitempty" xml:"id,omitempty"`
 	// Post's title
@@ -26,22 +33,56 @@ type PostResponse struct {
 	Description *string `form:"description,omitempty" json:"description,omitempty" xml:"description,omitempty"`
 }
 
-// NewSearchPostCollectionOK builds a "search" service "search" endpoint result
-// from a HTTP "OK" response.
-func NewSearchPostCollectionOK(body SearchResponseBody) searchviews.PostCollectionView {
-	v := make([]*searchviews.PostView, len(body))
-	for i, val := range body {
-		v[i] = &searchviews.PostView{
-			ID:          val.ID,
-			Title:       val.Title,
-			Description: val.Description,
-		}
+// NewSearchResultOK builds a "search" service "search" endpoint result from a
+// HTTP "OK" response.
+func NewSearchResultOK(body *SearchResponseBody) *search.SearchResult {
+	v := &search.SearchResult{
+		Page:      *body.Page,
+		TotalPage: *body.TotalPage,
+	}
+	v.Posts = make([]*search.Post, len(body.Posts))
+	for i, val := range body.Posts {
+		v.Posts[i] = unmarshalPostResponseBodyToSearchPost(val)
 	}
 	return v
 }
 
-// ValidatePostResponse runs the validations defined on PostResponse
-func ValidatePostResponse(body *PostResponse) (err error) {
+// ValidateSearchResponseBody runs the validations defined on SearchResponseBody
+func ValidateSearchResponseBody(body *SearchResponseBody) (err error) {
+	if body.Posts == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("posts", "body"))
+	}
+	if body.Page == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("page", "body"))
+	}
+	if body.TotalPage == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("totalPage", "body"))
+	}
+	for _, e := range body.Posts {
+		if e != nil {
+			if err2 := ValidatePostResponseBody(e); err2 != nil {
+				err = goa.MergeErrors(err, err2)
+			}
+		}
+	}
+	return
+}
+
+// ValidatePostCollectionResponseBody runs the validations defined on
+// PostCollectionResponseBody
+func ValidatePostCollectionResponseBody(body PostCollectionResponseBody) (err error) {
+	for _, e := range body {
+		if e != nil {
+			if err2 := ValidatePostResponseBody(e); err2 != nil {
+				err = goa.MergeErrors(err, err2)
+			}
+		}
+	}
+	return
+}
+
+// ValidatePostResponseBody runs the validations defined on PostResponseBody
+func ValidatePostResponseBody(body *PostResponseBody) (err error) {
 	if body.ID == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("id", "body"))
 	}

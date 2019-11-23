@@ -25,6 +25,7 @@ func NewSearch(logger *log.Logger, esClient *elasticsearch.Client) search.Servic
 }
 
 const (
+	defaultPage     = 1
 	defaultPageSize = 50
 )
 
@@ -52,10 +53,12 @@ type source struct {
 	Title       string `json:"title"`
 }
 
-func (s *searchrsrvc) Search(ctx context.Context, p *search.SearchPayload) (res search.PostCollection, err error) {
+func (s *searchrsrvc) Search(ctx context.Context, p *search.SearchPayload) (res *search.SearchResult, err error) {
 	var page, pageSize uint
 	if p.Page != nil {
 		page = *p.Page
+	} else {
+		page = defaultPage
 	}
 	if p.PageSize != nil {
 		pageSize = *p.PageSize
@@ -98,7 +101,11 @@ func (s *searchrsrvc) Search(ctx context.Context, p *search.SearchPayload) (res 
 		}
 	}
 
-	return posts, nil
+	return &search.SearchResult{
+		Posts:     posts,
+		Page:      page,
+		TotalPage: calcTotalPage(uint(sr.Hits.Total), pageSize),
+	}, nil
 }
 
 func (s *searchrsrvc) buildQuery(query string, page, pageSize uint) io.Reader {
@@ -115,7 +122,16 @@ func (s *searchrsrvc) buildQuery(query string, page, pageSize uint) io.Reader {
 	"from" : %d,
 	"size" : %d,
 	"sort" : [ { "_score" : "desc" }, { "_doc" : "asc" } ]
-}`, query, page*pageSize, pageSize))
+}`, query, (page-1)*pageSize, pageSize))
+	// page starts from 0 in elasticsearch
 
 	return strings.NewReader(b.String())
+}
+
+func calcTotalPage(totalItems, pageSize uint) uint {
+	totalPage := totalItems / pageSize
+	if totalItems%pageSize != 0 {
+		totalPage++
+	}
+	return totalPage
 }

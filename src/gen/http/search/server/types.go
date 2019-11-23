@@ -9,15 +9,21 @@ package server
 
 import (
 	search "github.com/k-yomo/elastic_blog_search/src/gen/search"
-	searchviews "github.com/k-yomo/elastic_blog_search/src/gen/search/views"
 )
 
-// PostResponseCollection is the type of the "search" service "search" endpoint
+// SearchResponseBody is the type of the "search" service "search" endpoint
 // HTTP response body.
-type PostResponseCollection []*PostResponse
+type SearchResponseBody struct {
+	Posts     PostCollectionResponseBody `form:"posts" json:"posts" xml:"posts"`
+	Page      uint                       `form:"page" json:"page" xml:"page"`
+	TotalPage uint                       `form:"totalPage" json:"totalPage" xml:"totalPage"`
+}
 
-// PostResponse is used to define fields on response body types.
-type PostResponse struct {
+// PostCollectionResponseBody is used to define fields on response body types.
+type PostCollectionResponseBody []*PostResponseBody
+
+// PostResponseBody is used to define fields on response body types.
+type PostResponseBody struct {
 	// Post's id
 	ID string `form:"id" json:"id" xml:"id"`
 	// Post's title
@@ -26,15 +32,17 @@ type PostResponse struct {
 	Description string `form:"description" json:"description" xml:"description"`
 }
 
-// NewPostResponseCollection builds the HTTP response body from the result of
-// the "search" endpoint of the "search" service.
-func NewPostResponseCollection(res searchviews.PostCollectionView) PostResponseCollection {
-	body := make([]*PostResponse, len(res))
-	for i, val := range res {
-		body[i] = &PostResponse{
-			ID:          *val.ID,
-			Title:       *val.Title,
-			Description: *val.Description,
+// NewSearchResponseBody builds the HTTP response body from the result of the
+// "search" endpoint of the "search" service.
+func NewSearchResponseBody(res *search.SearchResult) *SearchResponseBody {
+	body := &SearchResponseBody{
+		Page:      res.Page,
+		TotalPage: res.TotalPage,
+	}
+	if res.Posts != nil {
+		body.Posts = make([]*PostResponseBody, len(res.Posts))
+		for i, val := range res.Posts {
+			body.Posts[i] = marshalSearchPostToPostResponseBody(val)
 		}
 	}
 	return body

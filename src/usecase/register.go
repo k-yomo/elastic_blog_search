@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/elastic/go-elasticsearch/v7"
 	"io/ioutil"
 	"log"
@@ -47,7 +48,7 @@ func (s *registersrvc) Register(ctx context.Context, postPayloads []*register.Po
 	var bulkIndexParamsByte []byte
 	for _, payload := range postPayloads {
 		post := mapFromPayload(payload)
-		postIndexByte, err := json.Marshal(&IndexParams{Index: &Index{Index: PostsIndex, Type: "items", ID: post.ID}})
+		postIndexByte, err := json.Marshal(&IndexParams{Index: &Index{Index: PostsIndex, Type: PostsIndex, ID: post.ID}})
 		if err != nil {
 			return 500, err
 		}
@@ -73,6 +74,7 @@ func (s *registersrvc) Register(ctx context.Context, postPayloads []*register.Po
 		return 500, errors.New(string(body))
 	}
 
+	fmt.Println(string(body))
 	return 201, nil
 }
 

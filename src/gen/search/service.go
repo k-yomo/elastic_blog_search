@@ -10,14 +10,13 @@ package search
 import (
 	"context"
 
-	searchviews "github.com/k-yomo/elastic_blog_search/src/gen/search/views"
 	goa "goa.design/goa/v3/pkg"
 )
 
 // search service searches blog posts with given params
 type Service interface {
 	// Search implements search.
-	Search(context.Context, *SearchPayload) (res PostCollection, err error)
+	Search(context.Context, *SearchPayload) (res *SearchResult, err error)
 }
 
 // ServiceName is the name of the service as defined in the design. This is the
@@ -40,7 +39,13 @@ type SearchPayload struct {
 	PageSize *uint
 }
 
-// PostCollection is the result type of the search service search method.
+// SearchResult is the result type of the search service search method.
+type SearchResult struct {
+	Posts     PostCollection
+	Page      uint
+	TotalPage uint
+}
+
 type PostCollection []*Post
 
 type Post struct {
@@ -59,73 +64,4 @@ func MakeBadRequest(err error) *goa.ServiceError {
 		ID:      goa.NewErrorID(),
 		Message: err.Error(),
 	}
-}
-
-// NewPostCollection initializes result type PostCollection from viewed result
-// type PostCollection.
-func NewPostCollection(vres searchviews.PostCollection) PostCollection {
-	var res PostCollection
-	switch vres.View {
-	case "default", "":
-		res = newPostCollection(vres.Projected)
-	}
-	return res
-}
-
-// NewViewedPostCollection initializes viewed result type PostCollection from
-// result type PostCollection using the given view.
-func NewViewedPostCollection(res PostCollection, view string) searchviews.PostCollection {
-	var vres searchviews.PostCollection
-	switch view {
-	case "default", "":
-		p := newPostCollectionView(res)
-		vres = searchviews.PostCollection{p, "default"}
-	}
-	return vres
-}
-
-// newPostCollection converts projected type PostCollection to service type
-// PostCollection.
-func newPostCollection(vres searchviews.PostCollectionView) PostCollection {
-	res := make(PostCollection, len(vres))
-	for i, n := range vres {
-		res[i] = newPost(n)
-	}
-	return res
-}
-
-// newPostCollectionView projects result type PostCollection to projected type
-// PostCollectionView using the "default" view.
-func newPostCollectionView(res PostCollection) searchviews.PostCollectionView {
-	vres := make(searchviews.PostCollectionView, len(res))
-	for i, n := range res {
-		vres[i] = newPostView(n)
-	}
-	return vres
-}
-
-// newPost converts projected type Post to service type Post.
-func newPost(vres *searchviews.PostView) *Post {
-	res := &Post{}
-	if vres.ID != nil {
-		res.ID = *vres.ID
-	}
-	if vres.Title != nil {
-		res.Title = *vres.Title
-	}
-	if vres.Description != nil {
-		res.Description = *vres.Description
-	}
-	return res
-}
-
-// newPostView projects result type Post to projected type PostView using the
-// "default" view.
-func newPostView(res *Post) *searchviews.PostView {
-	vres := &searchviews.PostView{
-		ID:          &res.ID,
-		Title:       &res.Title,
-		Description: &res.Description,
-	}
-	return vres
 }

@@ -35,7 +35,7 @@ var _ = Service("register", func() {
 	Error("BadRequest")
 })
 
-var SearchResult = ResultType("application/vnd.searchresult", func() {
+var SearchResult = ResultType("application/vnd.posts", func() {
 	TypeName("Post")
 	ContentType("application/json")
 	Attribute("id", String, "Post's id")
@@ -47,7 +47,12 @@ var SearchResult = ResultType("application/vnd.searchresult", func() {
 var _ = Service("search", func() {
 	Description("search service searches blog posts with given params")
 	Method("search", func() {
-		Result(CollectionOf(SearchResult))
+		Result(func() {
+			Attribute("posts", CollectionOf(SearchResult))
+			Attribute("page", UInt)
+			Attribute("totalPage", UInt)
+			Required("posts", "page", "totalPage")
+		})
 		Payload(func() {
 			Description("search params")
 			Attribute("query", String, "search query")

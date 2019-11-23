@@ -35,8 +35,8 @@ func UsageExamples() string {
       {
          "body": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
          "description": "Dolores alias incidunt sunt ut veniam.",
-         "id": "Ut placeat nihil.",
-         "title": "Voluptatum earum dolores qui."
+         "id": "Nihil quisquam.",
+         "title": "Earum dolores qui."
       }
    ]'` + "\n" +
 		os.Args[0] + ` search search --query "Quia ipsum omnis repellat nostrum autem." --page 6514126617171776835 --page-size 12386236855430162696` + "\n" +
@@ -186,8 +186,8 @@ Example:
       {
          "body": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
          "description": "Dolores alias incidunt sunt ut veniam.",
-         "id": "Ut placeat nihil.",
-         "title": "Voluptatum earum dolores qui."
+         "id": "Nihil quisquam.",
+         "title": "Earum dolores qui."
       }
    ]'
 `, os.Args[0])

@@ -35,11 +35,6 @@ func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
 func NewSearchEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*SearchPayload)
-		res, err := s.Search(ctx, p)
-		if err != nil {
-			return nil, err
-		}
-		vres := NewViewedPostCollection(res, "default")
-		return vres, nil
+		return s.Search(ctx, p)
 	}
 }
