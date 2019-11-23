@@ -16,7 +16,6 @@ import (
 	"net/url"
 
 	search "github.com/k-yomo/elastic_blog_search/src/gen/search"
-	searchviews "github.com/k-yomo/elastic_blog_search/src/gen/search/views"
 	goahttp "goa.design/goa/v3/http"
 )
 
@@ -83,17 +82,27 @@ func DecodeSearchResponse(decoder func(*http.Response) goahttp.Decoder, restoreB
 			if err != nil {
 				return nil, goahttp.ErrDecodingError("search", "search", err)
 			}
-			p := NewSearchPostCollectionOK(body)
-			view := "default"
-			vres := searchviews.PostCollection{p, view}
-			if err = searchviews.ValidatePostCollection(vres); err != nil {
+			err = ValidateSearchResponseBody(&body)
+			if err != nil {
 				return nil, goahttp.ErrValidationError("search", "search", err)
 			}
-			res := search.NewPostCollection(vres)
+			res := NewSearchResultOK(&body)
 			return res, nil
 		default:
 			body, _ := ioutil.ReadAll(resp.Body)
 			return nil, goahttp.ErrInvalidResponse("search", "search", resp.StatusCode, string(body))
 		}
 	}
+}
+
+// unmarshalPostResponseBodyToSearchPost builds a value of type *search.Post
+// from a value of type *PostResponseBody.
+func unmarshalPostResponseBodyToSearchPost(v *PostResponseBody) *search.Post {
+	res := &search.Post{
+		ID:          *v.ID,
+		Title:       *v.Title,
+		Description: *v.Description,
+	}
+
+	return res
 }

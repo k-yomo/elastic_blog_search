@@ -1,4 +1,4 @@
-version: '3'
+version: '3.7'
 services:
   elasticsearch:
     build: ./docker/es
@@ -20,15 +20,21 @@ services:
       - 5601:5601
     depends_on:
       - elasticsearch
+    environment:
+      - XPACK_SECURITY_ENABLED=false
 
   app:
     build:
       context: .
       dockerfile: docker/app/Dockerfile-dev
+    volumes:
+      - .:/go/src/github.com/k-yomo/elastic_blog_search
     ports:
-      - 1323:1323
+      - 8080:8080
     depends_on:
       - elasticsearch
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
 
 volumes:
   es_data:

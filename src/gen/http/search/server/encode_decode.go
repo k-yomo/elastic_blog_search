@@ -12,7 +12,7 @@ import (
 	"net/http"
 	"strconv"
 
-	searchviews "github.com/k-yomo/elastic_blog_search/src/gen/search/views"
+	search "github.com/k-yomo/elastic_blog_search/src/gen/search"
 	goahttp "goa.design/goa/v3/http"
 	goa "goa.design/goa/v3/pkg"
 )
@@ -21,9 +21,9 @@ import (
 // search endpoint.
 func EncodeSearchResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
 	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
-		res := v.(searchviews.PostCollection)
+		res := v.(*search.SearchResult)
 		enc := encoder(ctx, w)
-		body := NewPostResponseCollection(res.Projected)
+		body := NewSearchResponseBody(res)
 		w.WriteHeader(http.StatusOK)
 		return enc.Encode(body)
 	}
@@ -72,4 +72,16 @@ func DecodeSearchRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 
 		return payload, nil
 	}
+}
+
+// marshalSearchPostToPostResponseBody builds a value of type *PostResponseBody
+// from a value of type *search.Post.
+func marshalSearchPostToPostResponseBody(v *search.Post) *PostResponseBody {
+	res := &PostResponseBody{
+		ID:          v.ID,
+		Title:       v.Title,
+		Description: v.Description,
+	}
+
+	return res
 }

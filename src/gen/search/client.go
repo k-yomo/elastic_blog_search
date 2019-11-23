@@ -29,11 +29,11 @@ func NewClient(search goa.Endpoint) *Client {
 // Search may return the following errors:
 //	- "BadRequest" (type *goa.ServiceError)
 //	- error: internal error
-func (c *Client) Search(ctx context.Context, p *SearchPayload) (res PostCollection, err error) {
+func (c *Client) Search(ctx context.Context, p *SearchPayload) (res *SearchResult, err error) {
 	var ires interface{}
 	ires, err = c.SearchEndpoint(ctx, p)
 	if err != nil {
 		return
 	}
-	return ires.(PostCollection), nil
+	return ires.(*SearchResult), nil
 }
