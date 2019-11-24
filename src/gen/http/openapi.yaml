@@ -16,9 +16,10 @@ paths:
   /posts/bulk:
     post:
       tags:
-      - register
-      summary: register register
-      operationId: register#register
+      - posts
+      summary: register posts
+      description: registers blog posts to be searched
+      operationId: posts#register
       parameters:
       - name: Authorization
         in: header
@@ -29,7 +30,7 @@ paths:
         in: body
         required: true
         schema:
-          $ref: '#/definitions/RegisterRegisterRequestBody'
+          $ref: '#/definitions/PostsRegisterRequestBody'
           required:
           - posts
       responses:
@@ -45,9 +46,10 @@ paths:
   /posts/search:
     get:
       tags:
-      - search
-      summary: search search
-      operationId: search#search
+      - posts
+      summary: search posts
+      description: search blog posts
+      operationId: posts#search
       parameters:
       - name: query
         in: query
@@ -70,7 +72,7 @@ paths:
         "200":
           description: OK response.
           schema:
-            $ref: '#/definitions/SearchSearchResponseBody'
+            $ref: '#/definitions/PostsSearchResponseBody'
             required:
             - posts
             - page
@@ -89,8 +91,50 @@ paths:
       schemes:
       - http
 definitions:
-  PostRequestBody:
-    title: PostRequestBody
+  PostOutputResponseBody:
+    title: 'Mediatype identifier: application/vnd.posts; view=default'
+    type: object
+    properties:
+      description:
+        type: string
+        description: Post's description
+        example: Corrupti ipsam reprehenderit.
+      id:
+        type: string
+        description: Post's id
+        example: Porro repellendus et.
+      title:
+        type: string
+        description: Post's title
+        example: Nisi nostrum nobis ratione.
+    description: PostOutputResponseBody result type (default view)
+    example:
+      description: Et omnis ut sequi est qui omnis.
+      id: Suscipit aut sit perferendis blanditiis ea quo.
+      title: Repudiandae et.
+    required:
+    - id
+    - title
+    - description
+  PostOutputResponseBodyCollection:
+    title: 'Mediatype identifier: application/vnd.posts; type=collection; view=default'
+    type: array
+    items:
+      $ref: '#/definitions/PostOutputResponseBody'
+    description: PostOutputCollectionResponseBody is the result type for an array
+      of PostOutputResponseBody (default view)
+    example:
+    - description: Possimus harum molestiae nemo quo enim.
+      id: Asperiores quasi aut tenetur autem libero sint.
+      title: Voluptatem possimus illo voluptatibus.
+    - description: Possimus harum molestiae nemo quo enim.
+      id: Asperiores quasi aut tenetur autem libero sint.
+      title: Voluptatem possimus illo voluptatibus.
+    - description: Possimus harum molestiae nemo quo enim.
+      id: Asperiores quasi aut tenetur autem libero sint.
+      title: Voluptatem possimus illo voluptatibus.
+  PostParamsRequestBody:
+    title: PostParamsRequestBody
     type: object
     properties:
       body:
@@ -114,72 +158,30 @@ definitions:
       description: Est autem.
       id: Corrupti molestiae sequi.
       title: Hic delectus sit animi velit unde.
-  PostResponseBody:
-    title: 'Mediatype identifier: application/vnd.posts; view=default'
-    type: object
-    properties:
-      description:
-        type: string
-        description: Post's description
-        example: Corrupti ipsam reprehenderit.
-      id:
-        type: string
-        description: Post's id
-        example: Porro repellendus et.
-      title:
-        type: string
-        description: Post's title
-        example: Nisi nostrum nobis ratione.
-    description: PostResponseBody result type (default view)
-    example:
-      description: Et omnis ut sequi est qui omnis.
-      id: Suscipit aut sit perferendis blanditiis ea quo.
-      title: Repudiandae et.
-    required:
-    - id
-    - title
-    - description
-  PostResponseBodyCollection:
-    title: 'Mediatype identifier: application/vnd.posts; type=collection; view=default'
-    type: array
-    items:
-      $ref: '#/definitions/PostResponseBody'
-    description: PostCollectionResponseBody is the result type for an array of PostResponseBody
-      (default view)
-    example:
-    - description: Possimus harum molestiae nemo quo enim.
-      id: Aut tenetur autem libero.
-      title: Voluptatem voluptatem possimus illo voluptatibus.
-    - description: Possimus harum molestiae nemo quo enim.
-      id: Aut tenetur autem libero.
-      title: Voluptatem voluptatem possimus illo voluptatibus.
-    - description: Possimus harum molestiae nemo quo enim.
-      id: Aut tenetur autem libero.
-      title: Voluptatem voluptatem possimus illo voluptatibus.
-  RegisterRegisterRequestBody:
-    title: RegisterRegisterRequestBody
+  PostsRegisterRequestBody:
+    title: PostsRegisterRequestBody
     type: object
     properties:
       posts:
         type: array
         items:
-          $ref: '#/definitions/PostRequestBody'
+          $ref: '#/definitions/PostParamsRequestBody'
         example:
-        - body: Tempore voluptas cumque voluptatem aut facere.
-          description: Assumenda nesciunt nesciunt quasi voluptates perferendis.
-          id: Earum dolores qui.
-          title: Dolores alias incidunt sunt ut veniam.
+        - body: Repellat nostrum autem.
+          description: Cumque voluptatem aut facere quia ipsum.
+          id: Quasi voluptates.
+          title: Exercitationem tempore.
         minItems: 1
     example:
       posts:
-      - body: Tempore voluptas cumque voluptatem aut facere.
-        description: Assumenda nesciunt nesciunt quasi voluptates perferendis.
-        id: Earum dolores qui.
-        title: Dolores alias incidunt sunt ut veniam.
+      - body: Repellat nostrum autem.
+        description: Cumque voluptatem aut facere quia ipsum.
+        id: Quasi voluptates.
+        title: Exercitationem tempore.
     required:
     - posts
-  SearchSearchResponseBody:
-    title: SearchSearchResponseBody
+  PostsSearchResponseBody:
+    title: PostsSearchResponseBody
     type: object
     properties:
       page:
@@ -187,7 +189,7 @@ definitions:
         example: 9133816778920279665
         format: int64
       posts:
-        $ref: '#/definitions/PostResponseBodyCollection'
+        $ref: '#/definitions/PostOutputResponseBodyCollection'
       totalPage:
         type: integer
         example: 3659491618346060683
@@ -196,11 +198,17 @@ definitions:
       page: 9617362754030863365
       posts:
       - description: Possimus harum molestiae nemo quo enim.
-        id: Aut tenetur autem libero.
-        title: Voluptatem voluptatem possimus illo voluptatibus.
+        id: Asperiores quasi aut tenetur autem libero sint.
+        title: Voluptatem possimus illo voluptatibus.
       - description: Possimus harum molestiae nemo quo enim.
-        id: Aut tenetur autem libero.
-        title: Voluptatem voluptatem possimus illo voluptatibus.
+        id: Asperiores quasi aut tenetur autem libero sint.
+        title: Voluptatem possimus illo voluptatibus.
+      - description: Possimus harum molestiae nemo quo enim.
+        id: Asperiores quasi aut tenetur autem libero sint.
+        title: Voluptatem possimus illo voluptatibus.
+      - description: Possimus harum molestiae nemo quo enim.
+        id: Asperiores quasi aut tenetur autem libero sint.
+        title: Voluptatem possimus illo voluptatibus.
       totalPage: 4543024737980907117
     required:
     - posts
