@@ -13,8 +13,7 @@ import (
 	"net/http"
 	"os"
 
-	registerc "github.com/k-yomo/elastic_blog_search/src/gen/http/register/client"
-	searchc "github.com/k-yomo/elastic_blog_search/src/gen/http/search/client"
+	postsc "github.com/k-yomo/elastic_blog_search/src/gen/http/posts/client"
 	goahttp "goa.design/goa/v3/http"
 	goa "goa.design/goa/v3/pkg"
 )
@@ -24,36 +23,22 @@ import (
 //    command (subcommand1|subcommand2|...)
 //
 func UsageCommands() string {
-	return `register register
-search search
+	return `posts (register|search)
 `
 }
 
 // UsageExamples produces an example of a valid invocation of the CLI tool.
 func UsageExamples() string {
-	return os.Args[0] + ` register register --body '{
+	return os.Args[0] + ` posts register --body '{
       "posts": [
          {
-            "body": "Tempore voluptas cumque voluptatem aut facere.",
-            "description": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
-            "id": "Earum dolores qui.",
-            "title": "Dolores alias incidunt sunt ut veniam."
-         },
-         {
-            "body": "Tempore voluptas cumque voluptatem aut facere.",
-            "description": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
-            "id": "Earum dolores qui.",
-            "title": "Dolores alias incidunt sunt ut veniam."
-         },
-         {
-            "body": "Tempore voluptas cumque voluptatem aut facere.",
-            "description": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
-            "id": "Earum dolores qui.",
-            "title": "Dolores alias incidunt sunt ut veniam."
+            "body": "Repellat nostrum autem.",
+            "description": "Cumque voluptatem aut facere quia ipsum.",
+            "id": "Quasi voluptates.",
+            "title": "Exercitationem tempore."
          }
       ]
-   }' --key "Ipsum omnis repellat nostrum autem facilis."` + "\n" +
-		os.Args[0] + ` search search --query "Est ipsa laboriosam assumenda veritatis sapiente ullam." --page 2911086586027087742 --page-size 5957678696885577255` + "\n" +
+   }' --key "Ipsam nemo voluptatem."` + "\n" +
 		""
 }
 
@@ -67,24 +52,20 @@ func ParseEndpoint(
 	restore bool,
 ) (goa.Endpoint, interface{}, error) {
 	var (
-		registerFlags = flag.NewFlagSet("register", flag.ContinueOnError)
+		postsFlags = flag.NewFlagSet("posts", flag.ContinueOnError)
 
-		registerRegisterFlags    = flag.NewFlagSet("register", flag.ExitOnError)
-		registerRegisterBodyFlag = registerRegisterFlags.String("body", "REQUIRED", "")
-		registerRegisterKeyFlag  = registerRegisterFlags.String("key", "REQUIRED", "")
+		postsRegisterFlags    = flag.NewFlagSet("register", flag.ExitOnError)
+		postsRegisterBodyFlag = postsRegisterFlags.String("body", "REQUIRED", "")
+		postsRegisterKeyFlag  = postsRegisterFlags.String("key", "REQUIRED", "")
 
-		searchFlags = flag.NewFlagSet("search", flag.ContinueOnError)
-
-		searchSearchFlags        = flag.NewFlagSet("search", flag.ExitOnError)
-		searchSearchQueryFlag    = searchSearchFlags.String("query", "REQUIRED", "")
-		searchSearchPageFlag     = searchSearchFlags.String("page", "", "")
-		searchSearchPageSizeFlag = searchSearchFlags.String("page-size", "", "")
+		postsSearchFlags        = flag.NewFlagSet("search", flag.ExitOnError)
+		postsSearchQueryFlag    = postsSearchFlags.String("query", "REQUIRED", "")
+		postsSearchPageFlag     = postsSearchFlags.String("page", "", "")
+		postsSearchPageSizeFlag = postsSearchFlags.String("page-size", "", "")
 	)
-	registerFlags.Usage = registerUsage
-	registerRegisterFlags.Usage = registerRegisterUsage
-
-	searchFlags.Usage = searchUsage
-	searchSearchFlags.Usage = searchSearchUsage
+	postsFlags.Usage = postsUsage
+	postsRegisterFlags.Usage = postsRegisterUsage
+	postsSearchFlags.Usage = postsSearchUsage
 
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		return nil, nil, err
@@ -101,10 +82,8 @@ func ParseEndpoint(
 	{
 		svcn = flag.Arg(0)
 		switch svcn {
-		case "register":
-			svcf = registerFlags
-		case "search":
-			svcf = searchFlags
+		case "posts":
+			svcf = postsFlags
 		default:
 			return nil, nil, fmt.Errorf("unknown service %q", svcn)
 		}
@@ -120,17 +99,13 @@ func ParseEndpoint(
 	{
 		epn = svcf.Arg(0)
 		switch svcn {
-		case "register":
+		case "posts":
 			switch epn {
 			case "register":
-				epf = registerRegisterFlags
+				epf = postsRegisterFlags
 
-			}
-
-		case "search":
-			switch epn {
 			case "search":
-				epf = searchSearchFlags
+				epf = postsSearchFlags
 
 			}
 
@@ -154,19 +129,15 @@ func ParseEndpoint(
 	)
 	{
 		switch svcn {
-		case "register":
-			c := registerc.NewClient(scheme, host, doer, enc, dec, restore)
+		case "posts":
+			c := postsc.NewClient(scheme, host, doer, enc, dec, restore)
 			switch epn {
 			case "register":
 				endpoint = c.Register()
-				data, err = registerc.BuildRegisterPayload(*registerRegisterBodyFlag, *registerRegisterKeyFlag)
-			}
-		case "search":
-			c := searchc.NewClient(scheme, host, doer, enc, dec, restore)
-			switch epn {
+				data, err = postsc.BuildRegisterPayload(*postsRegisterBodyFlag, *postsRegisterKeyFlag)
 			case "search":
 				endpoint = c.Search()
-				data, err = searchc.BuildSearchPayload(*searchSearchQueryFlag, *searchSearchPageFlag, *searchSearchPageSizeFlag)
+				data, err = postsc.BuildSearchPayload(*postsSearchQueryFlag, *postsSearchPageFlag, *postsSearchPageSizeFlag)
 			}
 		}
 	}
@@ -177,74 +148,50 @@ func ParseEndpoint(
 	return endpoint, data, nil
 }
 
-// registerUsage displays the usage of the register command and its subcommands.
-func registerUsage() {
-	fmt.Fprintf(os.Stderr, `register service registers blog posts to be searched
+// postsUsage displays the usage of the posts command and its subcommands.
+func postsUsage() {
+	fmt.Fprintf(os.Stderr, `Service is the posts service interface.
 Usage:
-    %s [globalflags] register COMMAND [flags]
+    %s [globalflags] posts COMMAND [flags]
 
 COMMAND:
-    register: Register implements register.
+    register: registers blog posts to be searched
+    search: search blog posts
 
 Additional help:
-    %s register COMMAND --help
+    %s posts COMMAND --help
 `, os.Args[0], os.Args[0])
 }
-func registerRegisterUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] register register -body JSON -key STRING
+func postsRegisterUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] posts register -body JSON -key STRING
 
-Register implements register.
+registers blog posts to be searched
     -body JSON: 
     -key STRING: 
 
 Example:
-    `+os.Args[0]+` register register --body '{
+    `+os.Args[0]+` posts register --body '{
       "posts": [
          {
-            "body": "Tempore voluptas cumque voluptatem aut facere.",
-            "description": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
-            "id": "Earum dolores qui.",
-            "title": "Dolores alias incidunt sunt ut veniam."
-         },
-         {
-            "body": "Tempore voluptas cumque voluptatem aut facere.",
-            "description": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
-            "id": "Earum dolores qui.",
-            "title": "Dolores alias incidunt sunt ut veniam."
-         },
-         {
-            "body": "Tempore voluptas cumque voluptatem aut facere.",
-            "description": "Assumenda nesciunt nesciunt quasi voluptates perferendis.",
-            "id": "Earum dolores qui.",
-            "title": "Dolores alias incidunt sunt ut veniam."
+            "body": "Repellat nostrum autem.",
+            "description": "Cumque voluptatem aut facere quia ipsum.",
+            "id": "Quasi voluptates.",
+            "title": "Exercitationem tempore."
          }
       ]
-   }' --key "Ipsum omnis repellat nostrum autem facilis."
+   }' --key "Ipsam nemo voluptatem."
 `, os.Args[0])
 }
 
-// searchUsage displays the usage of the search command and its subcommands.
-func searchUsage() {
-	fmt.Fprintf(os.Stderr, `search service searches blog posts with given params
-Usage:
-    %s [globalflags] search COMMAND [flags]
+func postsSearchUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] posts search -query STRING -page UINT -page-size UINT
 
-COMMAND:
-    search: Search implements search.
-
-Additional help:
-    %s search COMMAND --help
-`, os.Args[0], os.Args[0])
-}
-func searchSearchUsage() {
-	fmt.Fprintf(os.Stderr, `%s [flags] search search -query STRING -page UINT -page-size UINT
-
-Search implements search.
+search blog posts
     -query STRING: 
     -page UINT: 
     -page-size UINT: 
 
 Example:
-    `+os.Args[0]+` search search --query "Est ipsa laboriosam assumenda veritatis sapiente ullam." --page 2911086586027087742 --page-size 5957678696885577255
+    `+os.Args[0]+` posts search --query "Assumenda veritatis." --page 16422711775956634384 --page-size 13518972489877346488
 `, os.Args[0])
 }

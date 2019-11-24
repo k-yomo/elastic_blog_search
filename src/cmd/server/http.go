@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/k-yomo/elastic_blog_search/src/gen/posts"
 	"log"
 	"net/http"
 	"net/url"
@@ -10,10 +11,7 @@ import (
 	"time"
 
 	openapisvr "github.com/k-yomo/elastic_blog_search/src/gen/http/openapi/server"
-	registersvr "github.com/k-yomo/elastic_blog_search/src/gen/http/register/server"
-	searchsvr "github.com/k-yomo/elastic_blog_search/src/gen/http/search/server"
-	register "github.com/k-yomo/elastic_blog_search/src/gen/register"
-	search "github.com/k-yomo/elastic_blog_search/src/gen/search"
+	postssvr "github.com/k-yomo/elastic_blog_search/src/gen/http/posts/server"
 	goahttp "goa.design/goa/v3/http"
 	httpmdlwr "goa.design/goa/v3/http/middleware"
 	"goa.design/goa/v3/middleware"
@@ -21,7 +19,7 @@ import (
 
 // handleHTTPServer starts configures and starts a HTTP server on the given
 // URL. It shuts down the server if any error is received in the error channel.
-func handleHTTPServer(ctx context.Context, u *url.URL, registerEndpoints *register.Endpoints, searchEndpoints *search.Endpoints, wg *sync.WaitGroup, errc chan error, logger *log.Logger, debug bool) {
+func handleHTTPServer(ctx context.Context, u *url.URL, postsEndpoints *posts.Endpoints, wg *sync.WaitGroup, errc chan error, logger *log.Logger, debug bool) {
 
 	// Setup goa log adapter.
 	var (
@@ -52,19 +50,16 @@ func handleHTTPServer(ctx context.Context, u *url.URL, registerEndpoints *regist
 	// the service input and output data structures to HTTP requests and
 	// responses.
 	var (
-		registerServer *registersvr.Server
-		searchServer   *searchsvr.Server
-		openapiServer  *openapisvr.Server
+		postsServer   *postssvr.Server
+		openapiServer *openapisvr.Server
 	)
 	{
 		eh := errorHandler(logger)
-		registerServer = registersvr.New(registerEndpoints, mux, dec, enc, eh)
-		searchServer = searchsvr.New(searchEndpoints, mux, dec, enc, eh)
+		postsServer = postssvr.New(postsEndpoints, mux, dec, enc, eh)
 		openapiServer = openapisvr.New(nil, mux, dec, enc, eh)
 	}
 	// Configure the mux.
-	registersvr.Mount(mux, registerServer)
-	searchsvr.Mount(mux, searchServer)
+	postssvr.Mount(mux, postsServer)
 	openapisvr.Mount(mux)
 
 	// Wrap the multiplexer with additional middlewares. Middlewares mounted
@@ -81,10 +76,7 @@ func handleHTTPServer(ctx context.Context, u *url.URL, registerEndpoints *regist
 	// Start HTTP server using default configuration, change the code to
 	// configure the server as required by your service.
 	srv := &http.Server{Addr: u.Host, Handler: handler}
-	for _, m := range registerServer.Mounts {
-		logger.Printf("HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
-	}
-	for _, m := range searchServer.Mounts {
+	for _, m := range postsServer.Mounts {
 		logger.Printf("HTTP %q mounted on %s %s", m.Method, m.Verb, m.Pattern)
 	}
 	for _, m := range openapiServer.Mounts {

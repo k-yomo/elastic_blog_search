@@ -5,16 +5,14 @@ import (
 	"flag"
 	"fmt"
 	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/k-yomo/elastic_blog_search/src/usecase"
+	"github.com/k-yomo/elastic_blog_search/src/gen/posts"
+	"github.com/k-yomo/elastic_blog_search/src/service"
 	"log"
 	"net/url"
 	"os"
 	"os/signal"
 	"strings"
 	"sync"
-
-	register "github.com/k-yomo/elastic_blog_search/src/gen/register"
-	search "github.com/k-yomo/elastic_blog_search/src/gen/search"
 )
 
 func main() {
@@ -35,8 +33,7 @@ func main() {
 	)
 
 	var (
-		registerEndpoints = register.NewEndpoints(usecase.NewRegister(logger, esClient))
-		searchEndpoints   = search.NewEndpoints(usecase.NewSearch(logger, esClient))
+		postsEndpoints = posts.NewEndpoints(service.NewPostsService(logger, esClient))
 	)
 
 	// Create channel used by both the signal handler and server goroutines
@@ -76,7 +73,7 @@ func main() {
 			} else if u.Port() == "" {
 				u.Host += ":80"
 			}
-			handleHTTPServer(ctx, u, registerEndpoints, searchEndpoints, &wg, errc, logger, *dbgF)
+			handleHTTPServer(ctx, u, postsEndpoints, &wg, errc, logger, *dbgF)
 		}
 
 	default:
