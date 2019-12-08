@@ -167,16 +167,16 @@ func buildQuery(query string, page, pageSize uint) io.Reader {
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf(`{
 	"_source": ["id", "title", "description"],
-	"query" : {
+	"query": {
 		"multi_match" : {
-			"query" : %q,
+			"query": %q,
 			"type": "most_fields",
-			"fields" : ["title^100", "description^20", "body"]
+			"fields": ["title^100", "description^20", "body"]
 		}
 	},
-	"from" : %d,
-	"size" : %d,
-	"sort" : [ { "_score" : "desc" }, { "_doc" : "asc" } ]
+	"from": %d,
+	"size": %d,
+	"sort": [{ "_score" : "desc" }, { "_doc" : "asc" }]
 }`, query, (page-1)*pageSize, pageSize))
 	// page starts from 0 in elasticsearch
 
