@@ -159,7 +159,7 @@ func (p *postssrvc) Search(ctx context.Context, payload *posts.SearchPayload) (r
 	return &posts.SearchResult{
 		Posts:     postList,
 		Page:      payload.Page,
-		TotalPage: calcTotalPage(uint(sr.Hits.Total), payload.Page),
+		TotalPage: calcTotalPage(uint(sr.Hits.Total), payload.PageSize),
 	}, nil
 }
 
@@ -171,7 +171,7 @@ func buildQuery(query string, page, pageSize uint) io.Reader {
 		"multi_match" : {
 			"query": %q,
 			"type": "most_fields",
-			"fields": ["title^100", "description^20", "body"]
+			"fields": ["title^200", "description^20", "body"]
 		}
 	},
 	"from": %d,
@@ -184,9 +184,5 @@ func buildQuery(query string, page, pageSize uint) io.Reader {
 }
 
 func calcTotalPage(totalItems, pageSize uint) uint {
-	totalPage := totalItems / pageSize
-	if totalItems%pageSize != 0 {
-		totalPage++
-	}
-	return totalPage
+	return (totalItems + pageSize - 1) / pageSize
 }
