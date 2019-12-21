@@ -35,6 +35,7 @@ services:
       - elasticsearch
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - API_SECRET_KEY=dev_api_key
 
 volumes:
   es_data:
