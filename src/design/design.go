@@ -2,6 +2,7 @@ package design
 
 import (
 	. "goa.design/goa/v3/dsl"
+	cors "goa.design/plugins/v3/cors/dsl"
 )
 
 var _ = API("search", func() {
@@ -9,6 +10,10 @@ var _ = API("search", func() {
 	Description("HTTP service for blog posts search")
 	Server("server", func() {
 		Host("localhost", func() { URI("http://localhost:8088") })
+	})
+	cors.Origin("*", func() {
+		cors.Methods("GET")
+		cors.MaxAge(600)
 	})
 })
 
