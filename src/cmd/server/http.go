@@ -55,12 +55,12 @@ func handleHTTPServer(ctx context.Context, u *url.URL, postsEndpoints *posts.End
 	)
 	{
 		eh := errorHandler(logger)
-		postsServer = postssvr.New(postsEndpoints, mux, dec, enc, eh)
-		openapiServer = openapisvr.New(nil, mux, dec, enc, eh)
+		postsServer = postssvr.New(postsEndpoints, mux, dec, enc, eh, nil)
+		openapiServer = openapisvr.New(nil, mux, dec, enc, eh, nil)
 	}
 	// Configure the mux.
 	postssvr.Mount(mux, postsServer)
-	openapisvr.Mount(mux)
+	openapisvr.Mount(mux, openapiServer)
 
 	// Wrap the multiplexer with additional middlewares. Middlewares mounted
 	// here apply to all the service endpoints.

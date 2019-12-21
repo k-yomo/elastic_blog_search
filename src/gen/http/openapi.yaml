@@ -81,6 +81,8 @@ paths:
       - http
   /swagger.json:
     get:
+      tags:
+      - openapi
       summary: Download ../gen/http/openapi.json
       operationId: openapi#/swagger.json
       responses:
@@ -98,20 +100,20 @@ definitions:
       description:
         type: string
         description: Post's description
-        example: Corrupti ipsam reprehenderit.
+        example: Necessitatibus ab.
       id:
         type: string
         description: Post's id
-        example: Porro repellendus et.
+        example: Sequi a hic delectus sit animi.
       title:
         type: string
         description: Post's title
-        example: Nisi nostrum nobis ratione.
+        example: Unde autem est autem non.
     description: PostOutputResponseBody result type (default view)
     example:
-      description: Et omnis ut sequi est qui omnis.
-      id: Suscipit aut sit perferendis blanditiis ea quo.
-      title: Repudiandae et.
+      description: Quia suscipit aut.
+      id: Recusandae quia sit porro repellendus et non.
+      title: Nostrum nobis ratione rerum corrupti ipsam.
     required:
     - id
     - title
@@ -124,15 +126,18 @@ definitions:
     description: PostOutputCollectionResponseBody is the result type for an array
       of PostOutputResponseBody (default view)
     example:
-    - description: Possimus harum molestiae nemo quo enim.
-      id: Asperiores quasi aut tenetur autem libero sint.
-      title: Voluptatem possimus illo voluptatibus.
-    - description: Possimus harum molestiae nemo quo enim.
-      id: Asperiores quasi aut tenetur autem libero sint.
-      title: Voluptatem possimus illo voluptatibus.
-    - description: Possimus harum molestiae nemo quo enim.
-      id: Asperiores quasi aut tenetur autem libero sint.
-      title: Voluptatem possimus illo voluptatibus.
+    - description: Omnis officia non sunt architecto unde.
+      id: Blanditiis ea quo aliquam repudiandae.
+      title: Enim et omnis ut sequi est.
+    - description: Omnis officia non sunt architecto unde.
+      id: Blanditiis ea quo aliquam repudiandae.
+      title: Enim et omnis ut sequi est.
+    - description: Omnis officia non sunt architecto unde.
+      id: Blanditiis ea quo aliquam repudiandae.
+      title: Enim et omnis ut sequi est.
+    - description: Omnis officia non sunt architecto unde.
+      id: Blanditiis ea quo aliquam repudiandae.
+      title: Enim et omnis ut sequi est.
   PostParamsRequestBody:
     title: PostParamsRequestBody
     type: object
@@ -140,24 +145,24 @@ definitions:
       body:
         type: string
         description: Post's body
-        example: Minus quam ea.
+        example: Molestiae nemo quo enim corrupti quasi.
       description:
         type: string
         description: Post's description
-        example: Blanditiis sed et animi est architecto.
+        example: Voluptatibus corrupti possimus.
       id:
         type: string
         description: Post's id
-        example: Consequatur sit quis repellendus.
+        example: Quasi aut tenetur.
       title:
         type: string
         description: Post's title
-        example: Veritatis omnis.
+        example: Libero sint voluptatem voluptatem possimus.
     example:
-      body: Perspiciatis necessitatibus ab dolor.
-      description: Est autem.
-      id: Corrupti molestiae sequi.
-      title: Hic delectus sit animi velit unde.
+      body: Minus quam ea.
+      description: Blanditiis sed et animi est architecto.
+      id: Consequatur sit quis repellendus.
+      title: Veritatis omnis.
   PostsRegisterRequestBody:
     title: PostsRegisterRequestBody
     type: object
@@ -186,30 +191,24 @@ definitions:
     properties:
       page:
         type: integer
-        example: 9133816778920279665
+        example: 5233083922637572485
         format: int64
       posts:
         $ref: '#/definitions/PostOutputResponseBodyCollection'
       totalPage:
         type: integer
-        example: 3659491618346060683
+        example: 11468733848566144643
         format: int64
     example:
-      page: 9617362754030863365
+      page: 7645176822764601583
       posts:
-      - description: Possimus harum molestiae nemo quo enim.
-        id: Asperiores quasi aut tenetur autem libero sint.
-        title: Voluptatem possimus illo voluptatibus.
-      - description: Possimus harum molestiae nemo quo enim.
-        id: Asperiores quasi aut tenetur autem libero sint.
-        title: Voluptatem possimus illo voluptatibus.
-      - description: Possimus harum molestiae nemo quo enim.
-        id: Asperiores quasi aut tenetur autem libero sint.
-        title: Voluptatem possimus illo voluptatibus.
-      - description: Possimus harum molestiae nemo quo enim.
-        id: Asperiores quasi aut tenetur autem libero sint.
-        title: Voluptatem possimus illo voluptatibus.
-      totalPage: 4543024737980907117
+      - description: Dolores alias incidunt sunt ut veniam.
+        id: Nihil quisquam.
+        title: Earum dolores qui.
+      - description: Dolores alias incidunt sunt ut veniam.
+        id: Nihil quisquam.
+        title: Earum dolores qui.
+      totalPage: 900523377803597563
     required:
     - posts
     - page
