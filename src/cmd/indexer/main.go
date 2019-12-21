@@ -119,7 +119,7 @@ func indexPosts(posts Posts, searchAppURL *url.URL, apiKey string) error {
 	if err != nil {
 		return errors.Wrapf(err, "make post request to %s", searchAppURL)
 	}
-	if res.StatusCode > 200 {
+	if res.StatusCode >= 300 {
 		defer res.Body.Close()
 		resBody, err := ioutil.ReadAll(res.Body)
 		if err != nil {
@@ -179,7 +179,12 @@ func getPost(url string) (*Post, error) {
 		return nil, errors.Wrap(err, "init goquery document")
 	}
 	title := doc.Find("title").Text()
-	description := doc.Find("description").Text()
+	var description string
+	doc.Find("meta").Each(func(i int, s *goquery.Selection) {
+		if name, _ := s.Attr("name"); name == "description" {
+			description, _ = s.Attr("content")
+		}
+	})
 	body := doc.Find("main").Text()
 	bodyStr, err := html2text.FromString(body)
 	if err != nil {
