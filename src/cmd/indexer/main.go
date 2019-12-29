@@ -170,7 +170,7 @@ func getPost(url string) (*Post, error) {
 	if res.StatusCode != 200 {
 		body, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			return nil, errors.Wrapf(err, "make GET request to %s, got status: %d", res.StatusCode)
+			return nil, errors.Wrapf(err, "make GET request to %s, got status: %d", url, res.StatusCode)
 		}
 		return nil, errors.Errorf("make GET request to %s, got status: %d, body: %s", url, res.StatusCode, string(body))
 	}

@@ -19,7 +19,6 @@ require (
 	golang.org/x/net v0.0.0-20191207000613-e7e4b65ae663 // indirect
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
 	golang.org/x/tools v0.0.0-20191220234730-f13409bbebaf // indirect
-	google.golang.org/appengine v1.4.0 // indirect
 	gopkg.in/yaml.v2 v2.2.7 // indirect
 	jaytaylor.com/html2text v0.0.0-20190408195923-01ec452cbe43
 	mvdan.cc/xurls v1.1.0
