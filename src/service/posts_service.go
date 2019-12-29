@@ -131,7 +131,7 @@ func (p *postssrvc) Search(ctx context.Context, payload *posts.SearchPayload) (r
 	if response.StatusCode >= 400 {
 		body, err := ioutil.ReadAll(response.Body)
 		if err != nil {
-			return nil, posts.MakeInternal(errors.Wrapf(err, "read error response failed"))
+			return nil, posts.MakeInternal(errors.Wrapf(err, "read error response failed, response: %s", response.String()))
 		}
 		return nil, posts.MakeInternal(
 			errors.Errorf("search request to elasticsearch failed with status %s, body: %s", response.Status(), body),
@@ -144,7 +144,7 @@ func (p *postssrvc) Search(ctx context.Context, payload *posts.SearchPayload) (r
 	}
 	sr := &searchResult{}
 	if err := json.Unmarshal(body, sr); err != nil {
-		return nil, posts.MakeInternal(errors.Wrap(err, "unmarshal response body json failed"))
+		return nil, posts.MakeInternal(errors.Wrapf(err, "unmarshal response body json failed, body: %s", body))
 	}
 
 	postList := make([]*posts.PostOutput, len(sr.Hits.Hits))
