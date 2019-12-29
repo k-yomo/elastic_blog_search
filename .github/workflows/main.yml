@@ -1,0 +1,51 @@
+name: Main Workflow
+on: [push]
+
+env:
+  GO111MODULE: "on"
+  TZ: "Asia/Tokyo"
+  GCR_HOST: asia.gcr.io
+  DOCKER_IMAGE_NAME: elastic-blog-search
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Set up Go 1.13
+      uses: actions/setup-go@v1
+      with:
+        go-version: 1.13
+      id: go
+
+    - name: Check out code into the Go module directory
+      uses: actions/checkout@v1
+
+    - name: Restore Cache
+      uses: actions/cache@v1
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Download Modules
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: go mod download
+
+    - name: Test
+      run: go test -v ./...
+
+    - name: Setup Cloud SDK
+      uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        version: '272.0.0'
+        service_account_key: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Push Docker Image to GCR
+      run: |
+        gcloud --quiet auth configure-docker
+        docker build -t ${DOCKER_IMAGE_NAME} -f docker/app/Dockerfile-prod .
+        docker tag ${DOCKER_IMAGE_NAME} ${GCR_HOST}/${{ secrets.GCP_PROJECT_ID }}/${DOCKER_IMAGE_NAME}:${{ github.sha }}
+        docker push ${GCR_HOST}/${{ secrets.GCP_PROJECT_ID }}/${DOCKER_IMAGE_NAME}

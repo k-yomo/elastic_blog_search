@@ -14,4 +14,4 @@ FROM scratch
 COPY --from=builder /go/src/github.com/k-yomo/elastic_blog_search/bin/server /server
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 EXPOSE 1323
-ENTRYPOINT ["/server"]
+ENTRYPOINT ["/server", "-domain=0.0.0.0"]
