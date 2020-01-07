@@ -91,9 +91,13 @@ type searchResult struct {
 }
 
 type hits struct {
-	Total    int64       `json:"total"`
+	Total    *total      `json:"total"`
 	MaxScore interface{} `json:"max_score"`
 	Hits     []*hit      `json:"hits"`
+}
+
+type total struct {
+	Value int `json:"value"`
 }
 
 type hit struct {
@@ -159,7 +163,7 @@ func (p *postssrvc) Search(ctx context.Context, payload *posts.SearchPayload) (r
 	return &posts.SearchResult{
 		Posts:     postList,
 		Page:      payload.Page,
-		TotalPage: calcTotalPage(uint(sr.Hits.Total), payload.PageSize),
+		TotalPage: calcTotalPage(uint(sr.Hits.Total.Value), payload.PageSize),
 	}, nil
 }
 
