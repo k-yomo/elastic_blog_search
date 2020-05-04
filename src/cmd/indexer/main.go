@@ -135,11 +135,12 @@ func getPosts(urls []string) (Posts, error) {
 	eg := errgroup.Group{}
 	postChan := make(chan *Post, len(urls))
 
-	for _, url := range urls {
+	for _, u := range urls {
+		u := u
 		eg.Go(func() error {
-			post, err := getPost(url)
+			post, err := getPost(u)
 			if err != nil {
-				return errors.Wrapf(err, "get post info from %s", url)
+				return errors.Wrapf(err, "get post info from %s", u)
 			}
 			postChan <- post
 			return nil

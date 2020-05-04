@@ -5,10 +5,7 @@ go 1.13
 require (
 	github.com/PuerkitoBio/goquery v1.5.0
 	github.com/andybalholm/cascadia v1.1.0 // indirect
-	github.com/dimfeld/httptreemux v5.0.1+incompatible // indirect
 	github.com/elastic/go-elasticsearch/v7 v7.4.1
-	github.com/globalsign/mgo v0.0.0-20181015135952-eeefdecb41b8 // indirect
-	github.com/gorilla/websocket v1.4.1
 	github.com/mvdan/xurls v1.1.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.4 // indirect
 	github.com/pkg/errors v0.8.1
@@ -19,7 +16,6 @@ require (
 	golang.org/x/net v0.0.0-20191207000613-e7e4b65ae663 // indirect
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58
 	golang.org/x/tools v0.0.0-20191220234730-f13409bbebaf // indirect
-	google.golang.org/appengine v1.4.0 // indirect
 	gopkg.in/yaml.v2 v2.2.7 // indirect
 	jaytaylor.com/html2text v0.0.0-20190408195923-01ec452cbe43
 	mvdan.cc/xurls v1.1.0
