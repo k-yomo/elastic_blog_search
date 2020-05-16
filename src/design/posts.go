@@ -8,6 +8,7 @@ var PostPayload = Type("PostParams", func() {
 	Attribute("id", String, "Post's id")
 	Attribute("title", String, "Post's title")
 	Attribute("description", String, "Post's description")
+	Attribute("screenImageUrl", String, "Post's screen image url")
 	Attribute("body", String, "Post's body")
 })
 
@@ -18,7 +19,8 @@ var SearchResult = ResultType("application/vnd.posts", func() {
 	Attribute("id", String, "Post's id")
 	Attribute("title", String, "Post's title")
 	Attribute("description", String, "Post's description")
-	Required("id", "title", "description")
+	Attribute("screenImageUrl", String, "Post's screen image url")
+	Required("id", "title", "description", "screenImageUrl")
 })
 
 var _ = Service("posts", func() {

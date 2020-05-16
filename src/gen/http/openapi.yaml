@@ -100,44 +100,49 @@ definitions:
       description:
         type: string
         description: Post's description
-        example: Necessitatibus ab.
+        example: Non sunt architecto unde et ea facilis.
       id:
         type: string
         description: Post's id
-        example: Sequi a hic delectus sit animi.
+        example: Repudiandae et.
+      screenImageUrl:
+        type: string
+        description: Post's screen image url
+        example: Labore quas sed.
       title:
         type: string
         description: Post's title
-        example: Unde autem est autem non.
+        example: Et omnis ut sequi est qui omnis.
     description: PostOutputResponseBody result type (default view)
     example:
-      description: Quia suscipit aut.
-      id: Recusandae quia sit porro repellendus et non.
-      title: Nostrum nobis ratione rerum corrupti ipsam.
+      description: Recusandae cupiditate.
+      id: Quo perspiciatis fugiat hic.
+      screenImageUrl: Voluptatibus quas vero consequatur sit.
+      title: Quo modi id non quaerat quis.
     required:
     - id
     - title
     - description
+    - screenImageUrl
   PostOutputResponseBodyCollection:
     title: 'Mediatype identifier: application/vnd.posts; type=collection; view=default'
     type: array
     items:
       $ref: '#/definitions/PostOutputResponseBody'
-    description: PostOutputCollectionResponseBody is the result type for an array
-      of PostOutputResponseBody (default view)
+    description: PostOutputCollectionResponseBody is the result type for an array of PostOutputResponseBody (default view)
     example:
-    - description: Omnis officia non sunt architecto unde.
-      id: Blanditiis ea quo aliquam repudiandae.
-      title: Enim et omnis ut sequi est.
-    - description: Omnis officia non sunt architecto unde.
-      id: Blanditiis ea quo aliquam repudiandae.
-      title: Enim et omnis ut sequi est.
-    - description: Omnis officia non sunt architecto unde.
-      id: Blanditiis ea quo aliquam repudiandae.
-      title: Enim et omnis ut sequi est.
-    - description: Omnis officia non sunt architecto unde.
-      id: Blanditiis ea quo aliquam repudiandae.
-      title: Enim et omnis ut sequi est.
+    - description: Sunt iure incidunt.
+      id: In odio fugiat et modi.
+      screenImageUrl: Consectetur quae ipsa quaerat minus.
+      title: Temporibus quod.
+    - description: Sunt iure incidunt.
+      id: In odio fugiat et modi.
+      screenImageUrl: Consectetur quae ipsa quaerat minus.
+      title: Temporibus quod.
+    - description: Sunt iure incidunt.
+      id: In odio fugiat et modi.
+      screenImageUrl: Consectetur quae ipsa quaerat minus.
+      title: Temporibus quod.
   PostParamsRequestBody:
     title: PostParamsRequestBody
     type: object
@@ -145,24 +150,29 @@ definitions:
       body:
         type: string
         description: Post's body
-        example: Molestiae nemo quo enim corrupti quasi.
+        example: Perspiciatis necessitatibus ab dolor.
       description:
         type: string
         description: Post's description
-        example: Voluptatibus corrupti possimus.
+        example: A hic delectus sit animi velit unde.
       id:
         type: string
         description: Post's id
-        example: Quasi aut tenetur.
+        example: Et animi est architecto eos minus.
+      screenImageUrl:
+        type: string
+        description: Post's screen image url
+        example: Est autem.
       title:
         type: string
         description: Post's title
-        example: Libero sint voluptatem voluptatem possimus.
+        example: Ea esse corrupti molestiae.
     example:
-      body: Minus quam ea.
-      description: Blanditiis sed et animi est architecto.
-      id: Consequatur sit quis repellendus.
-      title: Veritatis omnis.
+      body: Perferendis blanditiis.
+      description: Nostrum nobis ratione rerum corrupti ipsam.
+      id: Quia sit porro.
+      screenImageUrl: Quia suscipit aut.
+      title: Et non.
   PostsRegisterRequestBody:
     title: PostsRegisterRequestBody
     type: object
@@ -172,17 +182,29 @@ definitions:
         items:
           $ref: '#/definitions/PostParamsRequestBody'
         example:
-        - body: Repellat nostrum autem.
-          description: Cumque voluptatem aut facere quia ipsum.
-          id: Quasi voluptates.
-          title: Exercitationem tempore.
+        - body: Voluptatibus corrupti possimus.
+          description: Ullam pariatur debitis asperiores quasi aut tenetur.
+          id: Nostrum autem facilis ipsam nemo voluptatem est.
+          screenImageUrl: Libero sint voluptatem voluptatem possimus.
+          title: Laboriosam assumenda veritatis.
+        - body: Voluptatibus corrupti possimus.
+          description: Ullam pariatur debitis asperiores quasi aut tenetur.
+          id: Nostrum autem facilis ipsam nemo voluptatem est.
+          screenImageUrl: Libero sint voluptatem voluptatem possimus.
+          title: Laboriosam assumenda veritatis.
+        - body: Voluptatibus corrupti possimus.
+          description: Ullam pariatur debitis asperiores quasi aut tenetur.
+          id: Nostrum autem facilis ipsam nemo voluptatem est.
+          screenImageUrl: Libero sint voluptatem voluptatem possimus.
+          title: Laboriosam assumenda veritatis.
         minItems: 1
     example:
       posts:
-      - body: Repellat nostrum autem.
-        description: Cumque voluptatem aut facere quia ipsum.
-        id: Quasi voluptates.
-        title: Exercitationem tempore.
+      - body: Voluptatibus corrupti possimus.
+        description: Ullam pariatur debitis asperiores quasi aut tenetur.
+        id: Nostrum autem facilis ipsam nemo voluptatem est.
+        screenImageUrl: Libero sint voluptatem voluptatem possimus.
+        title: Laboriosam assumenda veritatis.
     required:
     - posts
   PostsSearchResponseBody:
@@ -191,24 +213,34 @@ definitions:
     properties:
       page:
         type: integer
-        example: 5233083922637572485
+        example: 11722563091969807652
         format: int64
       posts:
         $ref: '#/definitions/PostOutputResponseBodyCollection'
       totalPage:
         type: integer
-        example: 11468733848566144643
+        example: 10567603210849653830
         format: int64
     example:
-      page: 7645176822764601583
+      page: 1935181647436417946
       posts:
-      - description: Dolores alias incidunt sunt ut veniam.
-        id: Nihil quisquam.
-        title: Earum dolores qui.
-      - description: Dolores alias incidunt sunt ut veniam.
-        id: Nihil quisquam.
-        title: Earum dolores qui.
-      totalPage: 900523377803597563
+      - description: Assumenda nesciunt nesciunt quasi voluptates perferendis.
+        id: Qui nihil.
+        screenImageUrl: Tempore voluptas cumque voluptatem aut facere.
+        title: Alias incidunt sunt ut veniam.
+      - description: Assumenda nesciunt nesciunt quasi voluptates perferendis.
+        id: Qui nihil.
+        screenImageUrl: Tempore voluptas cumque voluptatem aut facere.
+        title: Alias incidunt sunt ut veniam.
+      - description: Assumenda nesciunt nesciunt quasi voluptates perferendis.
+        id: Qui nihil.
+        screenImageUrl: Tempore voluptas cumque voluptatem aut facere.
+        title: Alias incidunt sunt ut veniam.
+      - description: Assumenda nesciunt nesciunt quasi voluptates perferendis.
+        id: Qui nihil.
+        screenImageUrl: Tempore voluptas cumque voluptatem aut facere.
+        title: Alias incidunt sunt ut veniam.
+      totalPage: 2589240082658054592
     required:
     - posts
     - page

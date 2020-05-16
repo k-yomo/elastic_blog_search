@@ -40,17 +40,18 @@ type index struct {
 }
 
 type post struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Body        string `json:"body"`
+	ID             string `json:"id"`
+	Title          string `json:"title"`
+	Description    string `json:"description"`
+	ScreenImageURL string `json:"screenImageUrl"`
+	Body           string `json:"body"`
 }
 
 // registers blog posts to be searched
 func (p *postssrvc) Register(ctx context.Context, payload *posts.RegisterPayload) (res int, err error) {
 	var bulkIndexParamsByte []byte
 	for _, p := range payload.Posts {
-		post := &post{ID: *p.ID, Title: *p.Title, Description: *p.Description, Body: *p.Body}
+		post := &post{ID: *p.ID, Title: *p.Title, Description: *p.Description, ScreenImageURL: *p.ScreenImageURL, Body: *p.Body}
 		postIndexByte, err := json.Marshal(&indexParams{Index: &index{Index: PostsIndex, Type: PostsIndex, ID: post.ID}})
 		if err != nil {
 			return 500, posts.MakeInternal(err)
@@ -109,9 +110,10 @@ type hit struct {
 }
 
 type source struct {
-	Description string `json:"description"`
-	ID          string `json:"id"`
-	Title       string `json:"title"`
+	ID             string `json:"id"`
+	Title          string `json:"title"`
+	Description    string `json:"description"`
+	ScreenImageURL string `json:"screenImageUrl"`
 }
 
 func (p *postssrvc) APIKeyAuth(ctx context.Context, key string, schema *security.APIKeyScheme) (context.Context, error) {
@@ -154,9 +156,10 @@ func (p *postssrvc) Search(ctx context.Context, payload *posts.SearchPayload) (r
 	postList := make([]*posts.PostOutput, len(sr.Hits.Hits))
 	for i, hit := range sr.Hits.Hits {
 		postList[i] = &posts.PostOutput{
-			ID:          hit.Source.ID,
-			Title:       hit.Source.Title,
-			Description: hit.Source.Description,
+			ID:           hit.Source.ID,
+			Title:        hit.Source.Title,
+			Description:  hit.Source.Description,
+			ScreenImageURL: hit.Source.ScreenImageURL,
 		}
 	}
 
@@ -170,7 +173,7 @@ func (p *postssrvc) Search(ctx context.Context, payload *posts.SearchPayload) (r
 func buildQuery(query string, page, pageSize uint) io.Reader {
 	var b strings.Builder
 	b.WriteString(fmt.Sprintf(`{
-	"_source": ["id", "title", "description"],
+	"_source": ["id", "title", "description", "screenImageUrl"],
 	"query": {
 		"multi_match" : {
 			"query": %q,

@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 )
 
 type RegisterParams struct {
@@ -22,10 +23,11 @@ type RegisterParams struct {
 }
 
 type Post struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Body        string `json:"body"`
+	ID             string `json:"id"`
+	Title          string `json:"title"`
+	Description    string `json:"description"`
+	ScreenImageURL string `json:"screenImageUrl"`
+	Body           string `json:"body"`
 }
 
 type Posts []*Post
@@ -138,6 +140,7 @@ func getPosts(urls []string) (Posts, error) {
 	for _, u := range urls {
 		u := u
 		eg.Go(func() error {
+			time.Sleep(1 * time.Second)
 			post, err := getPost(u)
 			if err != nil {
 				return errors.Wrapf(err, "get post info from %s", u)
@@ -180,10 +183,13 @@ func getPost(url string) (*Post, error) {
 		return nil, errors.Wrap(err, "init goquery document")
 	}
 	title := doc.Find("title").Text()
-	var description string
+	var description, screenImageURL string
 	doc.Find("meta").Each(func(i int, s *goquery.Selection) {
 		if name, _ := s.Attr("name"); name == "description" {
 			description, _ = s.Attr("content")
+		}
+		if name, _ := s.Attr("property"); name == "og:image" {
+			screenImageURL, _ = s.Attr("content")
 		}
 	})
 	body := doc.Find("main").Text()
@@ -191,5 +197,5 @@ func getPost(url string) (*Post, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "convert html to string")
 	}
-	return &Post{ID: url, Title: title, Description: description, Body: bodyStr}, nil
+	return &Post{ID: url, Title: title, Description: description, ScreenImageURL: screenImageURL, Body: bodyStr}, nil
 }
