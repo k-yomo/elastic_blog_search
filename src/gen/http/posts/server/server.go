@@ -65,7 +65,7 @@ func New(
 		},
 		Register: NewRegisterHandler(e.Register, mux, decoder, encoder, errhandler, formatter),
 		Search:   NewSearchHandler(e.Search, mux, decoder, encoder, errhandler, formatter),
-		CORS:     NewCORSHandler(e.CORS, mux, decoder, encoder, errhandler, formatter),
+		CORS:     NewCORSHandler(),
 	}
 }
 

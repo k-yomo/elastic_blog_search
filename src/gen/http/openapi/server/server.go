@@ -58,7 +58,7 @@ func New(
 			{"CORS", "OPTIONS", "/swagger.json"},
 			{"../gen/http/openapi.json", "GET", "/swagger.json"},
 		},
-		CORS: NewCORSHandler(e.CORS, mux, decoder, encoder, errhandler, formatter),
+		CORS: NewCORSHandler(),
 	}
 }
 
