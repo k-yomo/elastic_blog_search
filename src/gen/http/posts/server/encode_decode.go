@@ -125,6 +125,52 @@ func DecodeSearchRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.
 	}
 }
 
+// EncodeRelatedPostsResponse returns an encoder for responses returned by the
+// posts relatedPosts endpoint.
+func EncodeRelatedPostsResponse(encoder func(context.Context, http.ResponseWriter) goahttp.Encoder) func(context.Context, http.ResponseWriter, interface{}) error {
+	return func(ctx context.Context, w http.ResponseWriter, v interface{}) error {
+		res := v.(*posts.RelatedPostsResult)
+		enc := encoder(ctx, w)
+		body := NewRelatedPostsResponseBody(res)
+		w.WriteHeader(http.StatusOK)
+		return enc.Encode(body)
+	}
+}
+
+// DecodeRelatedPostsRequest returns a decoder for requests sent to the posts
+// relatedPosts endpoint.
+func DecodeRelatedPostsRequest(mux goahttp.Muxer, decoder func(*http.Request) goahttp.Decoder) func(*http.Request) (interface{}, error) {
+	return func(r *http.Request) (interface{}, error) {
+		var (
+			url_  string
+			count uint
+			err   error
+		)
+		url_ = r.URL.Query().Get("url")
+		if url_ == "" {
+			err = goa.MergeErrors(err, goa.MissingFieldError("url", "query string"))
+		}
+		{
+			countRaw := r.URL.Query().Get("count")
+			if countRaw == "" {
+				count = 5
+			} else {
+				v, err2 := strconv.ParseUint(countRaw, 10, strconv.IntSize)
+				if err2 != nil {
+					err = goa.MergeErrors(err, goa.InvalidFieldTypeError("count", countRaw, "unsigned integer"))
+				}
+				count = uint(v)
+			}
+		}
+		if err != nil {
+			return nil, err
+		}
+		payload := NewRelatedPostsPayload(url_, count)
+
+		return payload, nil
+	}
+}
+
 // unmarshalPostParamsRequestBodyToPostsPostParams builds a value of type
 // *posts.PostParams from a value of type *PostParamsRequestBody.
 func unmarshalPostParamsRequestBodyToPostsPostParams(v *PostParamsRequestBody) *posts.PostParams {

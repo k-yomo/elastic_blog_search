@@ -15,15 +15,17 @@ import (
 
 // Client is the "posts" service client.
 type Client struct {
-	RegisterEndpoint goa.Endpoint
-	SearchEndpoint   goa.Endpoint
+	RegisterEndpoint     goa.Endpoint
+	SearchEndpoint       goa.Endpoint
+	RelatedPostsEndpoint goa.Endpoint
 }
 
 // NewClient initializes a "posts" service client given the endpoints.
-func NewClient(register, search goa.Endpoint) *Client {
+func NewClient(register, search, relatedPosts goa.Endpoint) *Client {
 	return &Client{
-		RegisterEndpoint: register,
-		SearchEndpoint:   search,
+		RegisterEndpoint:     register,
+		SearchEndpoint:       search,
+		RelatedPostsEndpoint: relatedPosts,
 	}
 }
 
@@ -45,4 +47,14 @@ func (c *Client) Search(ctx context.Context, p *SearchPayload) (res *SearchResul
 		return
 	}
 	return ires.(*SearchResult), nil
+}
+
+// RelatedPosts calls the "relatedPosts" endpoint of the "posts" service.
+func (c *Client) RelatedPosts(ctx context.Context, p *RelatedPostsPayload) (res *RelatedPostsResult, err error) {
+	var ires interface{}
+	ires, err = c.RelatedPostsEndpoint(ctx, p)
+	if err != nil {
+		return
+	}
+	return ires.(*RelatedPostsResult), nil
 }

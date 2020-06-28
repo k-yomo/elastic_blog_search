@@ -156,9 +156,9 @@ func (p *postssrvc) Search(ctx context.Context, payload *posts.SearchPayload) (r
 	postList := make([]*posts.PostOutput, len(sr.Hits.Hits))
 	for i, hit := range sr.Hits.Hits {
 		postList[i] = &posts.PostOutput{
-			ID:           hit.Source.ID,
-			Title:        hit.Source.Title,
-			Description:  hit.Source.Description,
+			ID:             hit.Source.ID,
+			Title:          hit.Source.Title,
+			Description:    hit.Source.Description,
 			ScreenImageURL: hit.Source.ScreenImageURL,
 		}
 	}
@@ -167,6 +167,53 @@ func (p *postssrvc) Search(ctx context.Context, payload *posts.SearchPayload) (r
 		Posts:     postList,
 		Page:      payload.Page,
 		TotalPage: calcTotalPage(uint(sr.Hits.Total.Value), payload.PageSize),
+	}, nil
+}
+
+func (p *postssrvc) RelatedPosts(ctx context.Context, payload *posts.RelatedPostsPayload) (res *posts.RelatedPostsResult, err error) {
+	response, err := p.esClient.Search(
+		p.esClient.Search.WithContext(ctx),
+		p.esClient.Search.WithIndex(PostsIndex),
+		p.esClient.Search.WithBody(buildMoreLikeQuery(payload.URL, payload.Count)),
+	)
+	if err != nil {
+		return nil, posts.MakeInternal(errors.Wrap(err, "posts.request to elasticposts.failed"))
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode == 404 {
+		return nil, posts.MakeInternal(errors.Wrapf(err, "related posts for %s are not found", payload.URL))
+	}
+
+	if response.StatusCode >= 400 {
+		body, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return nil, posts.MakeInternal(errors.Wrapf(err, "read error response failed, response: %s", response.String()))
+		}
+		return nil, posts.MakeInternal(errors.Errorf("search request to elasticsearch failed with status %s, body: %s", response.Status(), body))
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, posts.MakeInternal(errors.Wrap(err, "read response body failed"))
+	}
+	sr := &searchResult{}
+	if err := json.Unmarshal(body, sr); err != nil {
+		return nil, posts.MakeInternal(errors.Wrapf(err, "unmarshal response body json failed, body: %s", body))
+	}
+	postList := make([]*posts.PostOutput, len(sr.Hits.Hits))
+	for i, hit := range sr.Hits.Hits {
+		postList[i] = &posts.PostOutput{
+			ID:             hit.Source.ID,
+			Title:          hit.Source.Title,
+			Description:    hit.Source.Description,
+			ScreenImageURL: hit.Source.ScreenImageURL,
+		}
+	}
+
+	return &posts.RelatedPostsResult{
+		Posts: postList,
+		Count: payload.Count,
 	}, nil
 }
 
@@ -185,6 +232,26 @@ func buildQuery(query string, page, pageSize uint) io.Reader {
 	"size": %d,
 	"sort": [{ "_score" : "desc" }, { "_doc" : "asc" }]
 }`, query, (page-1)*pageSize, pageSize))
+	// page starts from 0 in elasticsearch
+
+	return strings.NewReader(b.String())
+}
+
+func buildMoreLikeQuery(id string, count uint) io.Reader {
+	var b strings.Builder
+	b.WriteString(fmt.Sprintf(`{
+	"_source": ["id", "url", "title", "description", "screenImgUrl"],
+	"query": {
+		"more_like_this" : {
+			"fields": ["title^200", "description^20", "body"],
+			"like": {
+                "_index" : "posts",
+                "_id" : %q
+            }
+		}
+	},
+	"size": %d
+}`, id, count))
 	// page starts from 0 in elasticsearch
 
 	return strings.NewReader(b.String())

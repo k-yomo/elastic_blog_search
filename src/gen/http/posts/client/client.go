@@ -24,6 +24,10 @@ type Client struct {
 	// Search Doer is the HTTP client used to make requests to the search endpoint.
 	SearchDoer goahttp.Doer
 
+	// RelatedPosts Doer is the HTTP client used to make requests to the
+	// relatedPosts endpoint.
+	RelatedPostsDoer goahttp.Doer
+
 	// CORS Doer is the HTTP client used to make requests to the  endpoint.
 	CORSDoer goahttp.Doer
 
@@ -49,6 +53,7 @@ func NewClient(
 	return &Client{
 		RegisterDoer:        doer,
 		SearchDoer:          doer,
+		RelatedPostsDoer:    doer,
 		CORSDoer:            doer,
 		RestoreResponseBody: restoreBody,
 		scheme:              scheme,
@@ -101,6 +106,30 @@ func (c *Client) Search() goa.Endpoint {
 		resp, err := c.SearchDoer.Do(req)
 		if err != nil {
 			return nil, goahttp.ErrRequestError("posts", "search", err)
+		}
+		return decodeResponse(resp)
+	}
+}
+
+// RelatedPosts returns an endpoint that makes HTTP requests to the posts
+// service relatedPosts server.
+func (c *Client) RelatedPosts() goa.Endpoint {
+	var (
+		encodeRequest  = EncodeRelatedPostsRequest(c.encoder)
+		decodeResponse = DecodeRelatedPostsResponse(c.decoder, c.RestoreResponseBody)
+	)
+	return func(ctx context.Context, v interface{}) (interface{}, error) {
+		req, err := c.BuildRelatedPostsRequest(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+		err = encodeRequest(req, v)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := c.RelatedPostsDoer.Do(req)
+		if err != nil {
+			return nil, goahttp.ErrRequestError("posts", "relatedPosts", err)
 		}
 		return decodeResponse(resp)
 	}

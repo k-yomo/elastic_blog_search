@@ -24,7 +24,7 @@ func BuildRegisterPayload(postsRegisterBody string, postsRegisterKey string) (*p
 	{
 		err = json.Unmarshal([]byte(postsRegisterBody), &body)
 		if err != nil {
-			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"posts\": [\n         {\n            \"body\": \"Voluptatibus corrupti possimus.\",\n            \"description\": \"Ullam pariatur debitis asperiores quasi aut tenetur.\",\n            \"id\": \"Nostrum autem facilis ipsam nemo voluptatem est.\",\n            \"screenImageUrl\": \"Libero sint voluptatem voluptatem possimus.\",\n            \"title\": \"Laboriosam assumenda veritatis.\"\n         },\n         {\n            \"body\": \"Voluptatibus corrupti possimus.\",\n            \"description\": \"Ullam pariatur debitis asperiores quasi aut tenetur.\",\n            \"id\": \"Nostrum autem facilis ipsam nemo voluptatem est.\",\n            \"screenImageUrl\": \"Libero sint voluptatem voluptatem possimus.\",\n            \"title\": \"Laboriosam assumenda veritatis.\"\n         },\n         {\n            \"body\": \"Voluptatibus corrupti possimus.\",\n            \"description\": \"Ullam pariatur debitis asperiores quasi aut tenetur.\",\n            \"id\": \"Nostrum autem facilis ipsam nemo voluptatem est.\",\n            \"screenImageUrl\": \"Libero sint voluptatem voluptatem possimus.\",\n            \"title\": \"Laboriosam assumenda veritatis.\"\n         }\n      ]\n   }'")
+			return nil, fmt.Errorf("invalid JSON for body, example of valid JSON:\n%s", "'{\n      \"posts\": [\n         {\n            \"body\": \"Harum molestiae nemo quo.\",\n            \"description\": \"Tenetur autem libero sint voluptatem.\",\n            \"id\": \"Est ipsa laboriosam assumenda veritatis sapiente ullam.\",\n            \"screenImageUrl\": \"Possimus illo voluptatibus corrupti.\",\n            \"title\": \"Debitis asperiores quasi.\"\n         },\n         {\n            \"body\": \"Harum molestiae nemo quo.\",\n            \"description\": \"Tenetur autem libero sint voluptatem.\",\n            \"id\": \"Est ipsa laboriosam assumenda veritatis sapiente ullam.\",\n            \"screenImageUrl\": \"Possimus illo voluptatibus corrupti.\",\n            \"title\": \"Debitis asperiores quasi.\"\n         }\n      ]\n   }'")
 		}
 		if body.Posts == nil {
 			err = goa.MergeErrors(err, goa.MissingFieldError("posts", "body"))
@@ -86,6 +86,32 @@ func BuildSearchPayload(postsSearchQuery string, postsSearchPage string, postsSe
 	v.Query = query
 	v.Page = page
 	v.PageSize = pageSize
+
+	return v, nil
+}
+
+// BuildRelatedPostsPayload builds the payload for the posts relatedPosts
+// endpoint from CLI flags.
+func BuildRelatedPostsPayload(postsRelatedPostsURL string, postsRelatedPostsCount string) (*posts.RelatedPostsPayload, error) {
+	var err error
+	var url_ string
+	{
+		url_ = postsRelatedPostsURL
+	}
+	var count uint
+	{
+		if postsRelatedPostsCount != "" {
+			var v uint64
+			v, err = strconv.ParseUint(postsRelatedPostsCount, 10, 64)
+			count = uint(v)
+			if err != nil {
+				return nil, fmt.Errorf("invalid value for count, must be UINT")
+			}
+		}
+	}
+	v := &posts.RelatedPostsPayload{}
+	v.URL = url_
+	v.Count = count
 
 	return v, nil
 }

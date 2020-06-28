@@ -19,10 +19,11 @@ import (
 
 // Server lists the posts service endpoint HTTP handlers.
 type Server struct {
-	Mounts   []*MountPoint
-	Register http.Handler
-	Search   http.Handler
-	CORS     http.Handler
+	Mounts       []*MountPoint
+	Register     http.Handler
+	Search       http.Handler
+	RelatedPosts http.Handler
+	CORS         http.Handler
 }
 
 // ErrorNamer is an interface implemented by generated error structs that
@@ -60,12 +61,15 @@ func New(
 		Mounts: []*MountPoint{
 			{"Register", "POST", "/posts/bulk"},
 			{"Search", "GET", "/posts/search"},
+			{"RelatedPosts", "GET", "/posts/related"},
 			{"CORS", "OPTIONS", "/posts/bulk"},
 			{"CORS", "OPTIONS", "/posts/search"},
+			{"CORS", "OPTIONS", "/posts/related"},
 		},
-		Register: NewRegisterHandler(e.Register, mux, decoder, encoder, errhandler, formatter),
-		Search:   NewSearchHandler(e.Search, mux, decoder, encoder, errhandler, formatter),
-		CORS:     NewCORSHandler(),
+		Register:     NewRegisterHandler(e.Register, mux, decoder, encoder, errhandler, formatter),
+		Search:       NewSearchHandler(e.Search, mux, decoder, encoder, errhandler, formatter),
+		RelatedPosts: NewRelatedPostsHandler(e.RelatedPosts, mux, decoder, encoder, errhandler, formatter),
+		CORS:         NewCORSHandler(),
 	}
 }
 
@@ -76,6 +80,7 @@ func (s *Server) Service() string { return "posts" }
 func (s *Server) Use(m func(http.Handler) http.Handler) {
 	s.Register = m(s.Register)
 	s.Search = m(s.Search)
+	s.RelatedPosts = m(s.RelatedPosts)
 	s.CORS = m(s.CORS)
 }
 
@@ -83,6 +88,7 @@ func (s *Server) Use(m func(http.Handler) http.Handler) {
 func Mount(mux goahttp.Muxer, h *Server) {
 	MountRegisterHandler(mux, h.Register)
 	MountSearchHandler(mux, h.Search)
+	MountRelatedPostsHandler(mux, h.RelatedPosts)
 	MountCORSHandler(mux, h.CORS)
 }
 
@@ -188,6 +194,57 @@ func NewSearchHandler(
 	})
 }
 
+// MountRelatedPostsHandler configures the mux to serve the "posts" service
+// "relatedPosts" endpoint.
+func MountRelatedPostsHandler(mux goahttp.Muxer, h http.Handler) {
+	f, ok := handlePostsOrigin(h).(http.HandlerFunc)
+	if !ok {
+		f = func(w http.ResponseWriter, r *http.Request) {
+			h.ServeHTTP(w, r)
+		}
+	}
+	mux.Handle("GET", "/posts/related", f)
+}
+
+// NewRelatedPostsHandler creates a HTTP handler which loads the HTTP request
+// and calls the "posts" service "relatedPosts" endpoint.
+func NewRelatedPostsHandler(
+	endpoint goa.Endpoint,
+	mux goahttp.Muxer,
+	decoder func(*http.Request) goahttp.Decoder,
+	encoder func(context.Context, http.ResponseWriter) goahttp.Encoder,
+	errhandler func(context.Context, http.ResponseWriter, error),
+	formatter func(err error) goahttp.Statuser,
+) http.Handler {
+	var (
+		decodeRequest  = DecodeRelatedPostsRequest(mux, decoder)
+		encodeResponse = EncodeRelatedPostsResponse(encoder)
+		encodeError    = goahttp.ErrorEncoder(encoder, formatter)
+	)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(r.Context(), goahttp.AcceptTypeKey, r.Header.Get("Accept"))
+		ctx = context.WithValue(ctx, goa.MethodKey, "relatedPosts")
+		ctx = context.WithValue(ctx, goa.ServiceKey, "posts")
+		payload, err := decodeRequest(r)
+		if err != nil {
+			if err := encodeError(ctx, w, err); err != nil {
+				errhandler(ctx, w, err)
+			}
+			return
+		}
+		res, err := endpoint(ctx, payload)
+		if err != nil {
+			if err := encodeError(ctx, w, err); err != nil {
+				errhandler(ctx, w, err)
+			}
+			return
+		}
+		if err := encodeResponse(ctx, w, res); err != nil {
+			errhandler(ctx, w, err)
+		}
+	})
+}
+
 // MountCORSHandler configures the mux to serve the CORS endpoints for the
 // service posts.
 func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
@@ -200,6 +257,7 @@ func MountCORSHandler(mux goahttp.Muxer, h http.Handler) {
 	}
 	mux.Handle("OPTIONS", "/posts/bulk", f)
 	mux.Handle("OPTIONS", "/posts/search", f)
+	mux.Handle("OPTIONS", "/posts/related", f)
 }
 
 // NewCORSHandler creates a HTTP handler which returns a simple 200 response.

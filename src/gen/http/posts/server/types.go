@@ -26,6 +26,13 @@ type SearchResponseBody struct {
 	TotalPage uint                             `form:"totalPage" json:"totalPage" xml:"totalPage"`
 }
 
+// RelatedPostsResponseBody is the type of the "posts" service "relatedPosts"
+// endpoint HTTP response body.
+type RelatedPostsResponseBody struct {
+	Posts PostOutputCollectionResponseBody `form:"posts" json:"posts" xml:"posts"`
+	Count uint                             `form:"count" json:"count" xml:"count"`
+}
+
 // PostOutputCollectionResponseBody is used to define fields on response body
 // types.
 type PostOutputCollectionResponseBody []*PostOutputResponseBody
@@ -72,6 +79,21 @@ func NewSearchResponseBody(res *posts.SearchResult) *SearchResponseBody {
 	return body
 }
 
+// NewRelatedPostsResponseBody builds the HTTP response body from the result of
+// the "relatedPosts" endpoint of the "posts" service.
+func NewRelatedPostsResponseBody(res *posts.RelatedPostsResult) *RelatedPostsResponseBody {
+	body := &RelatedPostsResponseBody{
+		Count: res.Count,
+	}
+	if res.Posts != nil {
+		body.Posts = make([]*PostOutputResponseBody, len(res.Posts))
+		for i, val := range res.Posts {
+			body.Posts[i] = marshalPostsPostOutputToPostOutputResponseBody(val)
+		}
+	}
+	return body
+}
+
 // NewRegisterPayload builds a posts service register endpoint payload.
 func NewRegisterPayload(body *RegisterRequestBody, key string) *posts.RegisterPayload {
 	v := &posts.RegisterPayload{}
@@ -90,6 +112,15 @@ func NewSearchPayload(query string, page uint, pageSize uint) *posts.SearchPaylo
 	v.Query = query
 	v.Page = page
 	v.PageSize = pageSize
+
+	return v
+}
+
+// NewRelatedPostsPayload builds a posts service relatedPosts endpoint payload.
+func NewRelatedPostsPayload(url_ string, count uint) *posts.RelatedPostsPayload {
+	v := &posts.RelatedPostsPayload{}
+	v.URL = url_
+	v.Count = count
 
 	return v
 }

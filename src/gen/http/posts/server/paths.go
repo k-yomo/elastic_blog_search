@@ -16,3 +16,8 @@ func RegisterPostsPath() string {
 func SearchPostsPath() string {
 	return "/posts/search"
 }
+
+// RelatedPostsPostsPath returns the URL path to the posts service relatedPosts HTTP endpoint.
+func RelatedPostsPostsPath() string {
+	return "/posts/related"
+}

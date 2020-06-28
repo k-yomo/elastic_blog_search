@@ -26,6 +26,13 @@ type SearchResponseBody struct {
 	TotalPage *uint                            `form:"totalPage,omitempty" json:"totalPage,omitempty" xml:"totalPage,omitempty"`
 }
 
+// RelatedPostsResponseBody is the type of the "posts" service "relatedPosts"
+// endpoint HTTP response body.
+type RelatedPostsResponseBody struct {
+	Posts PostOutputCollectionResponseBody `form:"posts,omitempty" json:"posts,omitempty" xml:"posts,omitempty"`
+	Count *uint                            `form:"count,omitempty" json:"count,omitempty" xml:"count,omitempty"`
+}
+
 // PostParamsRequestBody is used to define fields on request body types.
 type PostParamsRequestBody struct {
 	// Post's id
@@ -84,6 +91,20 @@ func NewSearchResultOK(body *SearchResponseBody) *posts.SearchResult {
 	return v
 }
 
+// NewRelatedPostsResultOK builds a "posts" service "relatedPosts" endpoint
+// result from a HTTP "OK" response.
+func NewRelatedPostsResultOK(body *RelatedPostsResponseBody) *posts.RelatedPostsResult {
+	v := &posts.RelatedPostsResult{
+		Count: *body.Count,
+	}
+	v.Posts = make([]*posts.PostOutput, len(body.Posts))
+	for i, val := range body.Posts {
+		v.Posts[i] = unmarshalPostOutputResponseBodyToPostsPostOutput(val)
+	}
+
+	return v
+}
+
 // ValidateSearchResponseBody runs the validations defined on SearchResponseBody
 func ValidateSearchResponseBody(body *SearchResponseBody) (err error) {
 	if body.Posts == nil {
@@ -94,6 +115,21 @@ func ValidateSearchResponseBody(body *SearchResponseBody) (err error) {
 	}
 	if body.TotalPage == nil {
 		err = goa.MergeErrors(err, goa.MissingFieldError("totalPage", "body"))
+	}
+	if err2 := ValidatePostOutputCollectionResponseBody(body.Posts); err2 != nil {
+		err = goa.MergeErrors(err, err2)
+	}
+	return
+}
+
+// ValidateRelatedPostsResponseBody runs the validations defined on
+// RelatedPostsResponseBody
+func ValidateRelatedPostsResponseBody(body *RelatedPostsResponseBody) (err error) {
+	if body.Posts == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("posts", "body"))
+	}
+	if body.Count == nil {
+		err = goa.MergeErrors(err, goa.MissingFieldError("count", "body"))
 	}
 	if err2 := ValidatePostOutputCollectionResponseBody(body.Posts); err2 != nil {
 		err = goa.MergeErrors(err, err2)

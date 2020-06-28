@@ -20,6 +20,8 @@ type Service interface {
 	Register(context.Context, *RegisterPayload) (res int, err error)
 	// search blog posts
 	Search(context.Context, *SearchPayload) (res *SearchResult, err error)
+	// get related blog posts
+	RelatedPosts(context.Context, *RelatedPostsPayload) (res *RelatedPostsResult, err error)
 }
 
 // Auther defines the authorization functions to be implemented by the service.
@@ -36,7 +38,7 @@ const ServiceName = "posts"
 // MethodNames lists the service method names as defined in the design. These
 // are the same values that are set in the endpoint request contexts under the
 // MethodKey key.
-var MethodNames = [2]string{"register", "search"}
+var MethodNames = [3]string{"register", "search", "relatedPosts"}
 
 // RegisterPayload is the payload type of the posts service register method.
 type RegisterPayload struct {
@@ -60,6 +62,21 @@ type SearchResult struct {
 	Posts     PostOutputCollection
 	Page      uint
 	TotalPage uint
+}
+
+// params
+type RelatedPostsPayload struct {
+	// post's url
+	URL string
+	// count
+	Count uint
+}
+
+// RelatedPostsResult is the result type of the posts service relatedPosts
+// method.
+type RelatedPostsResult struct {
+	Posts PostOutputCollection
+	Count uint
 }
 
 type PostParams struct {

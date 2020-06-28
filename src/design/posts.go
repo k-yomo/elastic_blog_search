@@ -79,6 +79,34 @@ var _ = Service("posts", func() {
 		})
 	})
 
+	Method("relatedPosts", func() {
+		Description("get related blog posts")
+		NoSecurity()
+		Payload(func() {
+			Description("params")
+			Attribute("url", String, "post's url")
+			Attribute("count", UInt, func() {
+				Description("count")
+				Default(5)
+			})
+			Required("url")
+		})
+		Result(func() {
+			Attribute("posts", CollectionOf(SearchResult))
+			Attribute("count", UInt)
+			Required("posts", "count")
+		})
+		HTTP(func() {
+			GET("/posts/related")
+			Params(func() {
+				Param("url", String)
+				Param("count", UInt)
+				Required("url")
+			})
+			Response(StatusOK)
+		})
+	})
+
 	Error("badRequest")
 	Error("unauthenticated")
 	Error("internal", func() {

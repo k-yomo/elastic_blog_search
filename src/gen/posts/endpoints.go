@@ -16,8 +16,9 @@ import (
 
 // Endpoints wraps the "posts" service endpoints.
 type Endpoints struct {
-	Register goa.Endpoint
-	Search   goa.Endpoint
+	Register     goa.Endpoint
+	Search       goa.Endpoint
+	RelatedPosts goa.Endpoint
 }
 
 // NewEndpoints wraps the methods of the "posts" service with endpoints.
@@ -25,8 +26,9 @@ func NewEndpoints(s Service) *Endpoints {
 	// Casting service to Auther interface
 	a := s.(Auther)
 	return &Endpoints{
-		Register: NewRegisterEndpoint(s, a.APIKeyAuth),
-		Search:   NewSearchEndpoint(s),
+		Register:     NewRegisterEndpoint(s, a.APIKeyAuth),
+		Search:       NewSearchEndpoint(s),
+		RelatedPosts: NewRelatedPostsEndpoint(s),
 	}
 }
 
@@ -34,6 +36,7 @@ func NewEndpoints(s Service) *Endpoints {
 func (e *Endpoints) Use(m func(goa.Endpoint) goa.Endpoint) {
 	e.Register = m(e.Register)
 	e.Search = m(e.Search)
+	e.RelatedPosts = m(e.RelatedPosts)
 }
 
 // NewRegisterEndpoint returns an endpoint function that calls the method
@@ -61,5 +64,14 @@ func NewSearchEndpoint(s Service) goa.Endpoint {
 	return func(ctx context.Context, req interface{}) (interface{}, error) {
 		p := req.(*SearchPayload)
 		return s.Search(ctx, p)
+	}
+}
+
+// NewRelatedPostsEndpoint returns an endpoint function that calls the method
+// "relatedPosts" of service "posts".
+func NewRelatedPostsEndpoint(s Service) goa.Endpoint {
+	return func(ctx context.Context, req interface{}) (interface{}, error) {
+		p := req.(*RelatedPostsPayload)
+		return s.RelatedPosts(ctx, p)
 	}
 }

@@ -23,7 +23,7 @@ import (
 //    command (subcommand1|subcommand2|...)
 //
 func UsageCommands() string {
-	return `posts (register|search)
+	return `posts (register|search|related-posts)
 `
 }
 
@@ -32,28 +32,21 @@ func UsageExamples() string {
 	return os.Args[0] + ` posts register --body '{
       "posts": [
          {
-            "body": "Voluptatibus corrupti possimus.",
-            "description": "Ullam pariatur debitis asperiores quasi aut tenetur.",
-            "id": "Nostrum autem facilis ipsam nemo voluptatem est.",
-            "screenImageUrl": "Libero sint voluptatem voluptatem possimus.",
-            "title": "Laboriosam assumenda veritatis."
+            "body": "Harum molestiae nemo quo.",
+            "description": "Tenetur autem libero sint voluptatem.",
+            "id": "Est ipsa laboriosam assumenda veritatis sapiente ullam.",
+            "screenImageUrl": "Possimus illo voluptatibus corrupti.",
+            "title": "Debitis asperiores quasi."
          },
          {
-            "body": "Voluptatibus corrupti possimus.",
-            "description": "Ullam pariatur debitis asperiores quasi aut tenetur.",
-            "id": "Nostrum autem facilis ipsam nemo voluptatem est.",
-            "screenImageUrl": "Libero sint voluptatem voluptatem possimus.",
-            "title": "Laboriosam assumenda veritatis."
-         },
-         {
-            "body": "Voluptatibus corrupti possimus.",
-            "description": "Ullam pariatur debitis asperiores quasi aut tenetur.",
-            "id": "Nostrum autem facilis ipsam nemo voluptatem est.",
-            "screenImageUrl": "Libero sint voluptatem voluptatem possimus.",
-            "title": "Laboriosam assumenda veritatis."
+            "body": "Harum molestiae nemo quo.",
+            "description": "Tenetur autem libero sint voluptatem.",
+            "id": "Est ipsa laboriosam assumenda veritatis sapiente ullam.",
+            "screenImageUrl": "Possimus illo voluptatibus corrupti.",
+            "title": "Debitis asperiores quasi."
          }
       ]
-   }' --key "Molestiae nemo quo enim corrupti quasi."` + "\n" +
+   }' --key "Corrupti quasi ut consequatur sit quis repellendus."` + "\n" +
 		""
 }
 
@@ -77,10 +70,15 @@ func ParseEndpoint(
 		postsSearchQueryFlag    = postsSearchFlags.String("query", "REQUIRED", "")
 		postsSearchPageFlag     = postsSearchFlags.String("page", "1", "")
 		postsSearchPageSizeFlag = postsSearchFlags.String("page-size", "50", "")
+
+		postsRelatedPostsFlags     = flag.NewFlagSet("related-posts", flag.ExitOnError)
+		postsRelatedPostsURLFlag   = postsRelatedPostsFlags.String("url", "REQUIRED", "")
+		postsRelatedPostsCountFlag = postsRelatedPostsFlags.String("count", "5", "")
 	)
 	postsFlags.Usage = postsUsage
 	postsRegisterFlags.Usage = postsRegisterUsage
 	postsSearchFlags.Usage = postsSearchUsage
+	postsRelatedPostsFlags.Usage = postsRelatedPostsUsage
 
 	if err := flag.CommandLine.Parse(os.Args[1:]); err != nil {
 		return nil, nil, err
@@ -122,6 +120,9 @@ func ParseEndpoint(
 			case "search":
 				epf = postsSearchFlags
 
+			case "related-posts":
+				epf = postsRelatedPostsFlags
+
 			}
 
 		}
@@ -153,6 +154,9 @@ func ParseEndpoint(
 			case "search":
 				endpoint = c.Search()
 				data, err = postsc.BuildSearchPayload(*postsSearchQueryFlag, *postsSearchPageFlag, *postsSearchPageSizeFlag)
+			case "related-posts":
+				endpoint = c.RelatedPosts()
+				data, err = postsc.BuildRelatedPostsPayload(*postsRelatedPostsURLFlag, *postsRelatedPostsCountFlag)
 			}
 		}
 	}
@@ -172,6 +176,7 @@ Usage:
 COMMAND:
     register: registers blog posts to be searched
     search: search blog posts
+    related-posts: get related blog posts
 
 Additional help:
     %s posts COMMAND --help
@@ -188,28 +193,21 @@ Example:
     `+os.Args[0]+` posts register --body '{
       "posts": [
          {
-            "body": "Voluptatibus corrupti possimus.",
-            "description": "Ullam pariatur debitis asperiores quasi aut tenetur.",
-            "id": "Nostrum autem facilis ipsam nemo voluptatem est.",
-            "screenImageUrl": "Libero sint voluptatem voluptatem possimus.",
-            "title": "Laboriosam assumenda veritatis."
+            "body": "Harum molestiae nemo quo.",
+            "description": "Tenetur autem libero sint voluptatem.",
+            "id": "Est ipsa laboriosam assumenda veritatis sapiente ullam.",
+            "screenImageUrl": "Possimus illo voluptatibus corrupti.",
+            "title": "Debitis asperiores quasi."
          },
          {
-            "body": "Voluptatibus corrupti possimus.",
-            "description": "Ullam pariatur debitis asperiores quasi aut tenetur.",
-            "id": "Nostrum autem facilis ipsam nemo voluptatem est.",
-            "screenImageUrl": "Libero sint voluptatem voluptatem possimus.",
-            "title": "Laboriosam assumenda veritatis."
-         },
-         {
-            "body": "Voluptatibus corrupti possimus.",
-            "description": "Ullam pariatur debitis asperiores quasi aut tenetur.",
-            "id": "Nostrum autem facilis ipsam nemo voluptatem est.",
-            "screenImageUrl": "Libero sint voluptatem voluptatem possimus.",
-            "title": "Laboriosam assumenda veritatis."
+            "body": "Harum molestiae nemo quo.",
+            "description": "Tenetur autem libero sint voluptatem.",
+            "id": "Est ipsa laboriosam assumenda veritatis sapiente ullam.",
+            "screenImageUrl": "Possimus illo voluptatibus corrupti.",
+            "title": "Debitis asperiores quasi."
          }
       ]
-   }' --key "Molestiae nemo quo enim corrupti quasi."
+   }' --key "Corrupti quasi ut consequatur sit quis repellendus."
 `, os.Args[0])
 }
 
@@ -222,6 +220,18 @@ search blog posts
     -page-size UINT: 
 
 Example:
-    `+os.Args[0]+` posts search --query "Quis repellendus sit." --page 16756765372923265991 --page-size 9330543208876191118
+    `+os.Args[0]+` posts search --query "A blanditiis sed et animi est." --page 17474747091011644362 --page-size 1374544153326036729
+`, os.Args[0])
+}
+
+func postsRelatedPostsUsage() {
+	fmt.Fprintf(os.Stderr, `%s [flags] posts related-posts -url STRING -count UINT
+
+get related blog posts
+    -url STRING: 
+    -count UINT: 
+
+Example:
+    `+os.Args[0]+` posts related-posts --url "Esse corrupti molestiae sequi a hic delectus." --count 2959245027571265226
 `, os.Args[0])
 }
